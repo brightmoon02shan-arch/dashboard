@@ -120,7 +120,7 @@ body { font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
 .rank-sub { font-size: 11px; color: #888; font-weight: 400; }
 
 /* 月份分割线 */
-.month-sep { border-left: 2px solid #333 !important; }
+.month-sep { border-left: 1px solid #4facfe !important; }
 
 /* 响应式 */
 @media (max-width: 900px) {
@@ -529,7 +529,7 @@ function renderOverallDetail(){
   let head2 = '<tr class="month-group-header">';
   selMonths.forEach(m => {
     head1 += `<th colspan="20">${monthLabel(m)}</th>`;
-    head2 += `<th class="month-group-header month-sep"><span class="metric-label">目标收入(万)</span></th>
+    head2 += `<th class="month-group-header"><span class="metric-label">目标收入(万)</span></th>
       <th class="month-group-header"><span class="metric-label">实际收入(万)</span></th>
       <th class="month-group-header"><span class="metric-label">收入达成率</span></th>
       <th class="month-group-header"><span class="metric-label">目标GMV(万)</span></th>
@@ -800,7 +800,7 @@ function renderStoreDetail(){
   let head2 = '<tr class="month-group-header">';
   selMonths.forEach(m => {
     head1 += `<th colspan="20">${monthLabel(m)}</th>`;
-    head2 += `<th class="month-group-header month-sep"><span class="metric-label">目标收入(万)</span></th>
+    head2 += `<th class="month-group-header"><span class="metric-label">目标收入(万)</span></th>
       <th class="month-group-header"><span class="metric-label">实际收入(万)</span></th>
       <th class="month-group-header"><span class="metric-label">收入达成率</span></th>
       <th class="month-group-header"><span class="metric-label">目标GMV(万)</span></th>
