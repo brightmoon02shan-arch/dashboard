@@ -120,7 +120,7 @@ body { font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
 .rank-sub { font-size: 11px; color: #888; font-weight: 400; }
 
 /* 月份分割线 */
-.month-sep { border-left: 1px solid #4facfe !important; }
+.month-sep { border-left: 3px solid #4facfe !important; }
 
 /* 响应式 */
 @media (max-width: 900px) {
@@ -527,9 +527,10 @@ function renderOverallDetail(){
   // 表头: 第一行月份分组，第二行指标
   let head1 = '<tr><th rowspan="2" style="min-width:120px">分公司</th>';
   let head2 = '<tr class="month-group-header">';
-  selMonths.forEach(m => {
+  selMonths.forEach((m, i) => {
     head1 += `<th colspan="20">${monthLabel(m)}</th>`;
-    head2 += `<th class="month-group-header"><span class="metric-label">目标收入(万)</span></th>
+    const _hsep = i === 0 ? ' month-sep' : '';
+    head2 += `<th class="month-group-header${_hsep}"><span class="metric-label">目标收入(万)</span></th>
       <th class="month-group-header"><span class="metric-label">实际收入(万)</span></th>
       <th class="month-group-header"><span class="metric-label">收入达成率</span></th>
       <th class="month-group-header"><span class="metric-label">目标GMV(万)</span></th>
@@ -579,7 +580,8 @@ function renderOverallDetail(){
   });
   let totalTds = '';
   totalByMonth.forEach(a => {
-    totalTds += `<td class="month-sep">${fmtInt(a.targetRev)}</td><td>${fmtInt(a.actualRev)}</td>
+    const _sep = idx === 0 ? ' class="month-sep"' : '';
+    totalTds += `<td${_sep}>${fmtInt(a.targetRev)}</td><td>${fmtInt(a.actualRev)}</td>
       <td class="${valClass(a.revRate,95,85)}">${fmt(a.revRate)}%</td>
       <td>${fmtInt(a.targetGMV)}</td><td>${fmtInt(a.actualGMV)}</td>
       <td class="${valClass(a.gmvRate,95,85)}">${fmt(a.gmvRate)}%</td>
@@ -644,7 +646,8 @@ function renderOverallDetail(){
       const costEffR = mCostEffRank[curId] || '-';
       const costEffGrpR = mCostEffGrpRank[curId] || '-';
 
-      tds += `<td class="month-sep">${fmtInt(a.targetRev)}</td><td>${fmtInt(a.actualRev)}</td>
+      const _sep = idx === 0 ? ' class="month-sep"' : '';
+      tds += `<td${_sep}>${fmtInt(a.targetRev)}</td><td>${fmtInt(a.actualRev)}</td>
         <td class="${valClass(a.revRate,95,85)}">${fmt(a.revRate)}%</td>
         <td>${fmtInt(a.targetGMV)}</td><td>${fmtInt(a.actualGMV)}</td>
         <td class="${valClass(a.gmvRate,95,85)}">${fmt(a.gmvRate)}%</td>
@@ -798,9 +801,10 @@ function renderStoreDetail(){
 
   let head1 = '<tr><th rowspan="2" style="min-width:120px">分公司</th><th rowspan="2" class="col-channel">渠道</th>';
   let head2 = '<tr class="month-group-header">';
-  selMonths.forEach(m => {
+  selMonths.forEach((m, i) => {
     head1 += `<th colspan="20">${monthLabel(m)}</th>`;
-    head2 += `<th class="month-group-header"><span class="metric-label">目标收入(万)</span></th>
+    const _hsep = i === 0 ? ' month-sep' : '';
+    head2 += `<th class="month-group-header${_hsep}"><span class="metric-label">目标收入(万)</span></th>
       <th class="month-group-header"><span class="metric-label">实际收入(万)</span></th>
       <th class="month-group-header"><span class="metric-label">收入达成率</span></th>
       <th class="month-group-header"><span class="metric-label">目标GMV(万)</span></th>
@@ -848,7 +852,8 @@ function renderStoreDetail(){
   });
   let storeTotalTds = '';
   storeTotalByMonth.forEach(a => {
-    storeTotalTds += `<td class="month-sep">${fmtInt(a.targetRev)}</td><td>${fmtInt(a.actualRev)}</td>
+    const _sep = idx === 0 ? ' class="month-sep"' : '';
+    storeTotalTds += `<td${_sep}>${fmtInt(a.targetRev)}</td><td>${fmtInt(a.actualRev)}</td>
       <td class="${valClass(a.revRate,95,85)}">${fmt(a.revRate)}%</td>
       <td>${fmtInt(a.targetGMV)}</td><td>${fmtInt(a.actualGMV)}</td>
       <td class="${valClass(a.gmvRate,95,85)}">${fmt(a.gmvRate)}%</td>
@@ -883,7 +888,8 @@ function renderStoreDetail(){
       a.personEff = a.hc > 0 ? a.actualGMV/a.hc : 0;
       a.costEff = a.actualCost > 0 ? a.actualGMV/a.actualCost : 0;
 
-      subTds += `<td class="month-sep">${fmtInt(a.targetRev)}</td><td>${fmtInt(a.actualRev)}</td>
+      const _sep = idx === 0 ? ' class="month-sep"' : '';
+      subTds += `<td${_sep}>${fmtInt(a.targetRev)}</td><td>${fmtInt(a.actualRev)}</td>
         <td class="${valClass(a.revRate,95,85)}">${fmt(a.revRate)}%</td>
         <td>${fmtInt(a.targetGMV)}</td><td>${fmtInt(a.actualGMV)}</td>
         <td class="${valClass(a.gmvRate,95,85)}">${fmt(a.gmvRate)}%</td>
@@ -938,7 +944,8 @@ function renderStoreDetail(){
         const personGrpR = mGrpPersonRank[curId] || '-';
         const costEffGrpR = mGrpCostEffRank[curId] || '-';
 
-        tds += `<td class="month-sep">${fmtInt(d.targetRev)}</td><td>${fmtInt(d.actualRev)}</td>
+        const _sep = idx === 0 ? ' class="month-sep"' : '';
+        tds += `<td${_sep}>${fmtInt(d.targetRev)}</td><td>${fmtInt(d.actualRev)}</td>
           <td class="${valClass(revRate,95,85)}">${fmt(revRate)}%</td>
           <td>${fmtInt(d.targetGMV)}</td><td>${fmtInt(d.actualGMV)}</td>
           <td class="${valClass(gmvRate,95,85)}">${fmt(gmvRate)}%</td>
@@ -982,7 +989,8 @@ function renderStoreDetail(){
           const targetRate = targetRev > 0 ? budgetCost/targetRev*100 : 0;
           const personEff = hc > 0 ? actualGMV/hc : 0;
           const costEff = actualCost > 0 ? actualGMV/actualCost : 0;
-          subTds2 += `<td class="month-sep">${fmtInt(targetRev)}</td><td>${fmtInt(actualRev)}</td>
+          const _sep = idx === 0 ? ' class="month-sep"' : '';
+          subTds2 += `<td${_sep}>${fmtInt(targetRev)}</td><td>${fmtInt(actualRev)}</td>
             <td class="${valClass(revRate,95,85)}">${fmt(revRate)}%</td>
             <td>${fmtInt(targetGMV)}</td><td>${fmtInt(actualGMV)}</td>
             <td class="${valClass(gmvRate,95,85)}">${fmt(gmvRate)}%</td>
