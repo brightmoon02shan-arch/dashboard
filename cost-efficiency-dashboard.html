@@ -1,0 +1,1083 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>中国区人力成本&效率看板 V1.0</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif; background: #f0f2f5; color: #333; }
+
+/* 顶部导航 */
+.top-bar { background: linear-gradient(135deg, #1a1a2e, #16213e); color: white; padding: 14px 28px; display: flex; align-items: center; justify-content: space-between; }
+.top-bar h1 { font-size: 18px; font-weight: 600; letter-spacing: 1px; }
+.top-bar .version { font-size: 12px; background: rgba(255,255,255,0.15); padding: 3px 10px; border-radius: 10px; }
+
+/* 筛选栏 */
+.filter-bar { background: white; padding: 14px 28px; display: flex; gap: 16px; align-items: center; flex-wrap: wrap; box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
+.filter-bar label { font-size: 13px; color: #666; font-weight: 500; }
+.filter-bar select { padding: 6px 12px; border: 1px solid #d9d9d9; border-radius: 6px; font-size: 13px; background: white; cursor: pointer; outline: none; transition: border-color 0.2s; }
+.filter-bar select:hover { border-color: #4facfe; }
+.btn-query { padding: 6px 24px; background: #4facfe; border: none; border-radius: 6px; font-size: 13px; cursor: pointer; color: white; font-weight: 500; transition: background 0.2s; }
+.btn-query:hover { background: #3d9bec; }
+.btn-reset { padding: 6px 16px; background: #f5f5f5; border: 1px solid #d9d9d9; border-radius: 6px; font-size: 13px; cursor: pointer; color: #666; transition: all 0.2s; }
+.btn-reset:hover { background: #e8e8e8; }
+
+/* 主内容 */
+.main { padding: 20px 28px; max-width: 1400px; margin: 0 auto; }
+
+/* KPI 卡片区 */
+.kpi-group-label {
+  font-size: 15px; color: #333; margin-bottom: 10px; margin-top: 8px;
+  font-weight: 600; text-align: center; padding: 8px 0;
+  background: linear-gradient(90deg, transparent, #f0f4ff 20%, #f0f4ff 80%, transparent);
+  border-radius: 6px; letter-spacing: 2px;
+}
+.kpi-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 14px; }
+.kpi-card { background: white; border-radius: 10px; padding: 18px 20px; box-shadow: 0 1px 6px rgba(0,0,0,0.06); position: relative; overflow: hidden; }
+.kpi-card::before { content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%; }
+.kpi-card.rate::before { background: #4facfe; }
+.kpi-card.cost::before { background: #f5576c; }
+.kpi-card.revenue::before { background: #43e97b; }
+.kpi-card.gmv::before { background: #fa709a; }
+.kpi-card.efficiency::before { background: #a18cd1; }
+.kpi-label { font-size: 12px; color: #999; margin-bottom: 6px; }
+.kpi-value { font-size: 28px; font-weight: 700; }
+.kpi-card.rate .kpi-value { color: #4facfe; }
+.kpi-card.cost .kpi-value { color: #f5576c; }
+.kpi-card.revenue .kpi-value { color: #43e97b; }
+.kpi-card.gmv .kpi-value { color: #fa709a; }
+.kpi-card.efficiency .kpi-value { color: #8b6fc0; }
+.kpi-sub { font-size: 12px; color: #999; margin-top: 6px; display: flex; gap: 12px; }
+.kpi-sub span { display: inline-flex; align-items: center; gap: 3px; }
+.kpi-badge { font-size: 11px; padding: 1px 6px; border-radius: 8px; }
+.kpi-badge.up { background: #e8f5e9; color: #2e7d32; }
+.kpi-badge.down { background: #fce4ec; color: #c62828; }
+
+/* Tab 区 */
+.tab-container { background: white; border-radius: 10px; box-shadow: 0 1px 6px rgba(0,0,0,0.06); overflow: hidden; }
+.tab-header { display: flex; border-bottom: 1px solid #f0f0f0; }
+.tab-btn { padding: 12px 28px; font-size: 14px; font-weight: 500; cursor: pointer; border: none; background: none; color: #999; position: relative; transition: color 0.2s; }
+.tab-btn:hover { color: #666; }
+.tab-btn.active { color: #4facfe; }
+.tab-btn.active::after { content: ''; position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); width: 40px; height: 3px; background: #4facfe; border-radius: 2px; }
+.tab-panel { display: none; padding: 20px; }
+.tab-panel.active { display: block; }
+
+/* 子 Tab */
+.sub-tab-header { display: flex; gap: 0; margin-bottom: 16px; }
+.sub-tab-btn { padding: 6px 18px; font-size: 13px; cursor: pointer; border: 1px solid #d9d9d9; background: white; color: #666; transition: all 0.2s; }
+.sub-tab-btn:first-child { border-radius: 6px 0 0 6px; }
+.sub-tab-btn:last-child { border-radius: 0 6px 6px 0; }
+.sub-tab-btn:not(:first-child) { border-left: none; }
+.sub-tab-btn.active { background: #4facfe; color: white; border-color: #4facfe; }
+
+/* 表格容器 - 横向滚动 */
+.table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.table-wrap::-webkit-scrollbar { height: 6px; }
+.table-wrap::-webkit-scrollbar-thumb { background: #ccc; border-radius: 3px; }
+
+/* 表格 */
+.data-table { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 800px; }
+.data-table thead th { background: #fafafa; padding: 10px 12px; text-align: center; font-weight: 600; color: #666; border-bottom: 2px solid #f0f0f0; white-space: nowrap; position: sticky; top: 0; z-index: 2; }
+.data-table thead th:first-child { text-align: left; position: sticky; left: 0; z-index: 3; background: #fafafa; }
+.data-table tbody td { padding: 9px 12px; text-align: center; border-bottom: 1px solid #f5f5f5; }
+.data-table tbody td:first-child { text-align: left; font-weight: 500; position: sticky; left: 0; background: white; z-index: 1; }
+.data-table tbody tr:hover td { background: #f8fbff; }
+.data-table tbody tr:hover td:first-child { background: #f8fbff; }
+.data-table tbody tr.total-row td { background: #f0f7ff; font-weight: 600; border-top: 2px solid #4facfe; }
+.data-table tbody tr.total-row td:first-child { background: #f0f7ff; }
+
+/* 月份分组表头 */
+.month-group-header th { background: #eef2ff !important; font-size: 12px; color: #4facfe; border-bottom: 1px solid #d0ddf0 !important; }
+.month-group-header th .month-label { display: block; font-size: 13px; font-weight: 600; color: #4facfe; margin-bottom: 2px; }
+.month-group-header th .metric-label { font-size: 11px; color: #888; font-weight: 400; }
+
+/* +号展开按钮 */
+.expand-btn { display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; border: 1px solid #ccc; border-radius: 3px; font-size: 13px; color: #666; cursor: pointer; background: white; margin-right: 6px; line-height: 1; font-weight: 400; transition: all 0.15s; vertical-align: middle; user-select: none; }
+.expand-btn:hover { border-color: #4facfe; color: #4facfe; }
+.expand-btn.open { border-color: #4facfe; color: #4facfe; }
+.level1-row td:first-child { font-weight: 500; }
+.level1-row td:nth-child(2) { font-weight: 500; }
+.level2-row { display: none; }
+.level2-row.show { display: table-row; }
+.level2-row td:nth-child(2) { color: #aaa; font-weight: 400; text-align: left; }
+.level1-row td:nth-child(2) { text-align: left; }
+
+/* 渠道列加宽防换行 */
+.col-channel { min-width: 160px; white-space: nowrap; text-align: left !important; }
+
+/* 颜色数值 */
+.val-good { color: #2e7d32; }
+.val-warn { color: #f57f17; }
+.val-bad { color: #c62828; }
+.rank-badge { display: inline-block; font-size: 11px; min-width: 22px; padding: 1px 5px; border-radius: 8px; background: #f5f5f5; color: #999; }
+.rank-badge.top3 { background: #fff3e0; color: #e65100; }
+
+/* 排名分组表头 */
+.rank-group { background: #f8f9ff !important; }
+.rank-group th { background: #f0f4ff !important; color: #4facfe; font-size: 12px; }
+.rank-sub { font-size: 11px; color: #888; font-weight: 400; }
+
+/* 响应式 */
+@media (max-width: 900px) {
+  .kpi-row { grid-template-columns: repeat(2, 1fr); }
+  .filter-bar { padding: 10px 16px; }
+  .main { padding: 12px 16px; }
+}
+@media (max-width: 600px) { .kpi-row { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+
+<div class="top-bar">
+  <h1>📊 中国区人力成本 & 效率看板</h1>
+  <span class="version">V1.0 · 第一批次</span>
+</div>
+
+<div class="filter-bar">
+  <label>时间</label>
+  <select id="selMonth">
+    <option value="3">2026年3月</option>
+    <option value="2">2026年2月</option>
+    <option value="1">2026年1月</option>
+  </select>
+  <label>分公司</label>
+  <select id="selBranch">
+    <option value="all">全部分公司</option>
+    <option>北京分公司</option><option>上海分公司</option><option>广东分公司</option>
+    <option>浙江分公司</option><option>江苏分公司</option><option>四川分公司</option>
+    <option>湖北分公司</option><option>湖南分公司</option><option>山东分公司</option>
+    <option>河南分公司</option><option>福建分公司</option><option>安徽分公司</option>
+  </select>
+  <label>一级渠道</label>
+  <select id="selChannel">
+    <option value="all">全部渠道</option>
+    <option>直营</option><option>专卖&专区</option><option>授权</option>
+    <option>一商一议</option><option>售后服务</option>
+  </select>
+  <button class="btn-query" onclick="refreshAll()">查 询</button>
+  <button class="btn-reset" onclick="resetFilter()">重 置</button>
+</div>
+
+<div class="main">
+
+  <!-- KPI 卡片区 -->
+  <!-- 中国区指标卡片 -->
+  <div class="kpi-group-label">── 📍 中国区 ──</div>
+  <div class="kpi-row">
+    <div class="kpi-card rate">
+      <div class="kpi-label">人力成本实际费率</div>
+      <div class="kpi-value" id="kpiRate">8.3%</div>
+      <div class="kpi-sub">
+        <span>目标费率 <b>8.0%</b></span>
+        <span class="kpi-badge down">+0.3pp</span>
+      </div>
+    </div>
+    <div class="kpi-card cost">
+      <div class="kpi-label">累计人力成本使用率</div>
+      <div class="kpi-value" id="kpiCostRate">96.2%</div>
+      <div class="kpi-sub">
+        <span>预算 <b id="kpiBudget">2,850万</b></span>
+        <span>实际 <b id="kpiActual">2,742万</b></span>
+      </div>
+    </div>
+    <div class="kpi-card revenue">
+      <div class="kpi-label">累计收入达成率</div>
+      <div class="kpi-value" id="kpiRevenue">92.5%</div>
+      <div class="kpi-sub">
+        <span>目标 <b id="kpiRevTarget">3.56亿</b></span>
+        <span>实际 <b id="kpiRevActual">3.30亿</b></span>
+      </div>
+    </div>
+  </div>
+  <!-- 分公司指标卡片 -->
+  <div class="kpi-group-label">── 📍 分公司 ──</div>
+  <div class="kpi-row">
+    <div class="kpi-card rate">
+      <div class="kpi-label">人力成本实际费率</div>
+      <div class="kpi-value" id="kpiBranchRate">8.3%</div>
+      <div class="kpi-sub">
+        <span>目标费率 <b>8.0%</b></span>
+        <span class="kpi-badge down">+0.3pp</span>
+      </div>
+    </div>
+    <div class="kpi-card cost">
+      <div class="kpi-label">累计人力成本使用率</div>
+      <div class="kpi-value" id="kpiBranchCostRate">96.2%</div>
+      <div class="kpi-sub">
+        <span>预算 <b id="kpiBranchBudget">2,850万</b></span>
+        <span>实际 <b id="kpiBranchActual">2,742万</b></span>
+      </div>
+    </div>
+    <div class="kpi-card revenue">
+      <div class="kpi-label">累计收入达成率</div>
+      <div class="kpi-value" id="kpiBranchRevenue">92.5%</div>
+      <div class="kpi-sub">
+        <span>目标 <b id="kpiBranchRevTarget">3.56亿</b></span>
+        <span>实际 <b id="kpiBranchRevActual">3.30亿</b></span>
+      </div>
+    </div>
+    <div class="kpi-card gmv">
+      <div class="kpi-label">累计GMV达成率</div>
+      <div class="kpi-value" id="kpiGMV">88.7%</div>
+      <div class="kpi-sub">
+        <span>目标 <b id="kpiGmvTarget">12.8亿</b></span>
+        <span>实际 <b id="kpiGmvActual">11.35亿</b></span>
+      </div>
+    </div>
+    <div class="kpi-card efficiency">
+      <div class="kpi-label">当月人效</div>
+      <div class="kpi-value" id="kpiPersonEff">18.6万</div>
+      <div class="kpi-sub">
+        <span>环比上月 <span class="kpi-badge up">↑ 2.1%</span></span>
+        <span>TOP3: 广东·北京·浙江</span>
+      </div>
+    </div>
+    <div class="kpi-card efficiency" style="border-left-color:#667eea">
+      <div class="kpi-label">当月元效</div>
+      <div class="kpi-value" id="kpiCostEff" style="color:#667eea">2.24</div>
+      <div class="kpi-sub">
+        <span>环比上月 <span class="kpi-badge up">↑ 1.8%</span></span>
+        <span>TOP3: 广东·江苏·上海</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tab 区 -->
+  <div class="tab-container">
+    <div class="tab-header">
+      <button class="tab-btn active" onclick="switchTab('overall',this)">分公司成本&效率</button>
+      <button class="tab-btn" onclick="switchTab('store',this)">店体系成本&效率</button>
+    </div>
+
+    <!-- TAB1: 整体 -->
+    <div class="tab-panel active" id="panel-overall">
+      <div class="sub-tab-header">
+        <button class="sub-tab-btn active" onclick="switchSubTab(this,'overall-cumul')">累计</button>
+        <button class="sub-tab-btn" onclick="switchSubTab(this,'overall-detail')">明细</button>
+      </div>
+      <div id="overall-cumul">
+        <div class="table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>分公司</th>
+              <th>目标收入<br>(万)</th><th>实际收入<br>(万)</th><th>收入<br>达成率</th>
+              <th>目标GMV<br>(万)</th><th>实际GMV<br>(万)</th><th>GMV<br>达成率</th>
+              <th>预算成本<br>(万)</th><th>实际成本<br>(万)</th><th>成本<br>使用率</th>
+              <th>目标<br>费率</th><th>实际<br>费率</th>
+              <th>费率<br>全国排名</th><th>费率<br>同组排名</th>
+              <th>HC</th><th>人效<br>(万)</th>
+              <th>人效<br>全国排名</th><th>人效<br>同组排名</th>
+              <th>元效</th>
+              <th>元效<br>全国排名</th><th>元效<br>同组排名</th>
+            </tr>
+          </thead>
+          <tbody id="tbody-overall"></tbody>
+        </table>
+        </div>
+      </div>
+      <div id="overall-detail" style="display:none">
+        <div class="table-wrap" id="overall-detail-wrap"></div>
+      </div>
+    </div>
+
+    <!-- TAB2: 店体系 -->
+    <div class="tab-panel" id="panel-store">
+      <div class="sub-tab-header">
+        <button class="sub-tab-btn active" onclick="switchSubTab(this,'store-cumul')">累计</button>
+        <button class="sub-tab-btn" onclick="switchSubTab(this,'store-detail')">明细</button>
+      </div>
+      <div id="store-cumul">
+        <div class="table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>分公司</th><th class="col-channel">渠道</th>
+              <th>目标收入<br>(万)</th><th>实际收入<br>(万)</th><th>收入<br>达成率</th>
+              <th>目标GMV<br>(万)</th><th>实际GMV<br>(万)</th><th>GMV<br>达成率</th>
+              <th>预算成本<br>(万)</th><th>实际成本<br>(万)</th><th>成本<br>使用率</th>
+              <th>实际<br>费率</th>
+              <th>费率<br>全国排名</th><th>费率<br>同组排名</th>
+              <th>HC</th><th>人效<br>(万)</th>
+              <th>人效<br>全国排名</th><th>人效<br>同组排名</th>
+              <th>元效</th>
+              <th>元效<br>全国排名</th><th>元效<br>同组排名</th>
+            </tr>
+          </thead>
+          <tbody id="tbody-store"></tbody>
+        </table>
+        </div>
+      </div>
+      <div id="store-detail" style="display:none">
+        <div class="table-wrap" id="store-detail-wrap"></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ===== 常量 =====
+const ALL_MONTHS = ['2026-01','2026-02','2026-03'];
+const branches = ['北京分公司','上海分公司','广东分公司','浙江分公司','江苏分公司','四川分公司','湖北分公司','湖南分公司','山东分公司','河南分公司','福建分公司','安徽分公司'];
+
+// PRD 2.3 维度口径 - 渠道映射关系
+const channelMap = {
+  '直营': { sub: ['直营店店长','门店店员(直营)'], desc: '方向=直营店店长；门店店员且部门为直营店店长的部门' },
+  '专卖&专区': { sub: ['专卖','C类店','专区店'], desc: '专卖(专卖店店长) + C类店(C1/C2/服销店店长) + 专区店(D1/D2专区店店长)' },
+  '授权': { sub: ['授权杨帆店','县级简配店'], desc: '授权店店长+杨帆店店长；县级简配店店长' },
+  '一商一议': { sub: ['一商一议'], desc: '方向=一商一议店长' },
+  '售后服务': { sub: ['售后服务'], desc: '售后店店长、售后店工程师、空调监理' }
+};
+const channelNames = Object.keys(channelMap);
+
+function rand(min,max){ return Math.round((Math.random()*(max-min)+min)*10)/10; }
+function randInt(min,max){ return Math.round(Math.random()*(max-min)+min); }
+function fmt(v, dec=1){ return v.toFixed(dec); }
+function fmtInt(v){ return Math.round(v).toLocaleString(); }
+function valClass(v, good, bad, higher=true){
+  if(higher) return v >= good ? 'val-good' : v >= bad ? 'val-warn' : 'val-bad';
+  return v <= good ? 'val-good' : v <= bad ? 'val-warn' : 'val-bad';
+}
+function rankClass(r){ return r <= 3 ? 'rank-badge top3' : 'rank-badge'; }
+function monthLabel(m){ return m.replace('2026-','') + '月'; }
+// 排名显示：分母为0不参与排名
+function rankDisplay(r, val, maxVal){ return (val === 0 || val === undefined) ? '-' : `<span class="${rankClass(r)}">${r}</span>`; }
+
+// ===== 数据生成 =====
+// 每个分公司 × 渠道 × 月份的模拟数据
+function genMonthlyRow(){
+  const targetRev = rand(300,1500);
+  const actualRev = rand(targetRev*0.7, targetRev*1.08);
+  const targetGMV = rand(800,4000);
+  const actualGMV = rand(targetGMV*0.65, targetGMV*1.08);
+  const budgetCost = rand(30,120);
+  const actualCost = rand(budgetCost*0.8, budgetCost*1.15);
+  const hc = randInt(10,80);
+  return { targetRev, actualRev, targetGMV, actualGMV, budgetCost, actualCost, hc,
+    revRate: actualRev/targetRev*100,
+    gmvRate: actualGMV/targetGMV*100,
+    costRate: actualCost/budgetCost*100,
+    actualRate: actualRev > 0 ? actualCost/actualRev*100 : 0,
+    targetRate: budgetCost/targetRev*100,
+    personEff: hc > 0 ? actualGMV/hc : 0,
+    costEff: actualCost > 0 ? actualGMV/actualCost : 0
+  };
+}
+
+// 存储: raw[branch][channel][monthIdx] = row
+const raw = {};
+branches.forEach(b => {
+  raw[b] = {};
+  channelNames.forEach(ch => {
+    raw[b][ch] = ALL_MONTHS.map(() => genMonthlyRow());
+  });
+});
+
+// 固定随机种子模拟（保证同组排名有意义）
+// 同组定义：按渠道类型分组（直营/专卖&专区/授权/一商一议/售后服务）
+const channelGroups = {
+  '直营': ['直营'],
+  '专卖&专区': ['专卖&专区'],
+  '授权': ['授权'],
+  '一商一议': ['一商一议'],
+  '售后服务': ['售后服务']
+};
+
+function getSelectedMonths(){
+  const end = parseInt(document.getElementById('selMonth').value);
+  return ALL_MONTHS.slice(0, end);
+}
+
+function getFilteredBranches(){
+  const bm = document.getElementById('selBranch').value;
+  return bm === 'all' ? [...branches] : [bm];
+}
+
+function getFilteredChannels(){
+  const cm = document.getElementById('selChannel').value;
+  return cm === 'all' ? [...channelNames] : [cm];
+}
+
+// 按分公司+渠道+月份范围聚合
+function aggregate(branch, channel, monthIdxs){
+  const r = { targetRev:0, actualRev:0, targetGMV:0, actualGMV:0, budgetCost:0, actualCost:0, hc:0 };
+  monthIdxs.forEach(mi => {
+    const d = raw[branch][channel][mi];
+    r.targetRev += d.targetRev; r.actualRev += d.actualRev;
+    r.targetGMV += d.targetGMV; r.actualGMV += d.actualGMV;
+    r.budgetCost += d.budgetCost; r.actualCost += d.actualCost;
+    r.hc += d.hc;
+  });
+  r.revRate = r.targetRev > 0 ? r.actualRev/r.targetRev*100 : 0;
+  r.gmvRate = r.targetGMV > 0 ? r.actualGMV/r.targetGMV*100 : 0;
+  r.costRate = r.budgetCost > 0 ? r.actualCost/r.budgetCost*100 : 0;
+  r.actualRate = r.actualRev > 0 ? r.actualCost/r.actualRev*100 : 0;
+  r.targetRate = r.targetRev > 0 ? r.budgetCost/r.targetRev*100 : 0;
+  r.personEff = r.hc > 0 ? r.actualGMV/r.hc : 0;
+  r.costEff = r.actualCost > 0 ? r.actualGMV/r.actualCost : 0;
+  return r;
+}
+
+// ===== 全局排名计算 =====
+// 整体维度：按分公司排名（全国=所有分公司，同组=按渠道类型分组）
+// 店体系维度：按分公司×渠道排名（全国=所有分公司×渠道，同组=同渠道类型内）
+function computeRanks(items, key, desc=true){
+  // desc=true 值越大排名越靠前（人效/元效），desc=false 值越小排名越靠前（费率）
+  const valid = items.filter(d => d[key] > 0);
+  const sorted = [...valid].sort((a,b) => desc ? b[key]-a[key] : a[key]-b[key]);
+  const rankMap = {};
+  sorted.forEach((d, i) => { rankMap[d._id] = i + 1; });
+  return rankMap;
+}
+
+// ===== 渲染: 整体累计 =====
+function renderOverall(){
+  const fBranches = getFilteredBranches();
+  const fChannels = getFilteredChannels();
+  const mIdxs = getSelectedMonths().map((_,i) => i);
+
+  // 按分公司聚合所有渠道
+  const rows = fBranches.map(b => {
+    const r = { _id: b, branch: b, targetRev:0, actualRev:0, targetGMV:0, actualGMV:0, budgetCost:0, actualCost:0, hc:0 };
+    fChannels.forEach(ch => {
+      const a = aggregate(b, ch, mIdxs);
+      r.targetRev += a.targetRev; r.actualRev += a.actualRev;
+      r.targetGMV += a.targetGMV; r.actualGMV += a.actualGMV;
+      r.budgetCost += a.budgetCost; r.actualCost += a.actualCost;
+      r.hc += a.hc;
+    });
+    r.revRate = r.targetRev > 0 ? r.actualRev/r.targetRev*100 : 0;
+    r.gmvRate = r.targetGMV > 0 ? r.actualGMV/r.targetGMV*100 : 0;
+    r.costRate = r.budgetCost > 0 ? r.actualCost/r.budgetCost*100 : 0;
+    r.actualRate = r.actualRev > 0 ? r.actualCost/r.actualRev*100 : 0;
+    r.targetRate = r.targetRev > 0 ? r.budgetCost/r.targetRev*100 : 0;
+    r.personEff = r.hc > 0 ? r.actualGMV/r.hc : 0;
+    r.costEff = r.actualCost > 0 ? r.actualGMV/r.actualCost : 0;
+    return r;
+  });
+
+  // 全国排名
+  const natlRateRank = computeRanks(rows, 'actualRate', false);
+  const natlPersonRank = computeRanks(rows, 'personEff', true);
+  const natlCostEffRank = computeRanks(rows, 'costEff', true);
+
+  // 同组排名（整体维度下同组=所有分公司，排名与全国相同；实际场景同组应按城市等级等分组）
+  const grpRateRank = computeRanks(rows, 'actualRate', false);
+  const grpPersonRank = computeRanks(rows, 'personEff', true);
+  const grpCostEffRank = computeRanks(rows, 'costEff', true);
+
+  // 合计
+  const total = rows.reduce((acc, d) => {
+    ['targetRev','actualRev','targetGMV','actualGMV','budgetCost','actualCost','hc'].forEach(k => acc[k] += d[k]);
+    return acc;
+  }, { targetRev:0, actualRev:0, targetGMV:0, actualGMV:0, budgetCost:0, actualCost:0, hc:0 });
+  total.revRate = total.targetRev > 0 ? total.actualRev/total.targetRev*100 : 0;
+  total.gmvRate = total.targetGMV > 0 ? total.actualGMV/total.targetGMV*100 : 0;
+  total.costRate = total.budgetCost > 0 ? total.actualCost/total.budgetCost*100 : 0;
+  total.actualRate = total.actualRev > 0 ? total.actualCost/total.actualRev*100 : 0;
+  total.targetRate = total.targetRev > 0 ? total.budgetCost/total.targetRev*100 : 0;
+  total.personEff = total.hc > 0 ? total.actualGMV/total.hc : 0;
+  total.costEff = total.actualCost > 0 ? total.actualGMV/total.actualCost : 0;
+
+  function rowHtml(d, isTotal){
+    const nr = isTotal ? {} : {
+      natlRate: natlRateRank[d._id], grpRate: grpRateRank[d._id],
+      natlPerson: natlPersonRank[d._id], grpPerson: grpPersonRank[d._id],
+      natlCostEff: natlCostEffRank[d._id], grpCostEff: grpCostEffRank[d._id]
+    };
+    return `<tr class="${isTotal?'total-row':''}">
+      <td>${isTotal?'合计':d.branch}</td>
+      <td>${fmtInt(d.targetRev)}</td><td>${fmtInt(d.actualRev)}</td>
+      <td class="${valClass(d.revRate,95,85)}">${fmt(d.revRate)}%</td>
+      <td>${fmtInt(d.targetGMV)}</td><td>${fmtInt(d.actualGMV)}</td>
+      <td class="${valClass(d.gmvRate,95,85)}">${fmt(d.gmvRate)}%</td>
+      <td>${fmtInt(d.budgetCost)}</td><td>${fmtInt(d.actualCost)}</td>
+      <td class="${valClass(d.costRate,100,105,false)}">${fmt(d.costRate)}%</td>
+      <td>${fmt(d.targetRate)}%</td>
+      <td class="${valClass(d.actualRate,8,10,false)}">${fmt(d.actualRate)}%</td>
+      <td>${isTotal?'-':rankDisplay(natlRateRank[d._id], d.actualRate)}</td>
+      <td>${isTotal?'-':rankDisplay(grpRateRank[d._id], d.actualRate)}</td>
+      <td>${d.hc}</td><td>${fmt(d.personEff)}</td>
+      <td>${isTotal?'-':rankDisplay(natlPersonRank[d._id], d.personEff)}</td>
+      <td>${isTotal?'-':rankDisplay(grpPersonRank[d._id], d.personEff)}</td>
+      <td>${fmt(d.costEff,2)}</td>
+      <td>${isTotal?'-':rankDisplay(natlCostEffRank[d._id], d.costEff)}</td>
+      <td>${isTotal?'-':rankDisplay(grpCostEffRank[d._id], d.costEff)}</td>
+    </tr>`;
+  }
+
+  let html = rowHtml(total, true);
+  rows.forEach(d => { html += rowHtml(d, false); });
+  document.getElementById('tbody-overall').innerHTML = html;
+}
+
+// ===== 渲染: 整体明细（月份分组表头） =====
+function renderOverallDetail(){
+  const fBranches = getFilteredBranches();
+  const fChannels = getFilteredChannels();
+  const selMonths = getSelectedMonths();
+  const mIdxs = selMonths.map((_,i)=>i);
+
+  // 表头: 第一行月份分组，第二行指标
+  let head1 = '<tr><th rowspan="2" style="min-width:120px">分公司</th>';
+  let head2 = '<tr class="month-group-header">';
+  selMonths.forEach(m => {
+    head1 += `<th colspan="20">${monthLabel(m)}</th>`;
+    head2 += `<th class="month-group-header"><span class="metric-label">目标收入(万)</span></th>
+      <th class="month-group-header"><span class="metric-label">实际收入(万)</span></th>
+      <th class="month-group-header"><span class="metric-label">收入达成率</span></th>
+      <th class="month-group-header"><span class="metric-label">目标GMV(万)</span></th>
+      <th class="month-group-header"><span class="metric-label">实际GMV(万)</span></th>
+      <th class="month-group-header"><span class="metric-label">GMV达成率</span></th>
+      <th class="month-group-header"><span class="metric-label">预算成本(万)</span></th>
+      <th class="month-group-header"><span class="metric-label">实际成本(万)</span></th>
+      <th class="month-group-header"><span class="metric-label">成本使用率</span></th>
+      <th class="month-group-header"><span class="metric-label">目标费率</span></th>
+      <th class="month-group-header"><span class="metric-label">实际费率</span></th>
+      <th class="month-group-header"><span class="metric-label">费率全国排名</span></th>
+      <th class="month-group-header"><span class="metric-label">费率同组排名</span></th>
+      <th class="month-group-header"><span class="metric-label">HC</span></th>
+      <th class="month-group-header"><span class="metric-label">人效(万)</span></th>
+      <th class="month-group-header"><span class="metric-label">人效全国排名</span></th>
+      <th class="month-group-header"><span class="metric-label">人效同组排名</span></th>
+      <th class="month-group-header"><span class="metric-label">元效</span></th>
+      <th class="month-group-header"><span class="metric-label">元效全国排名</span></th>
+      <th class="month-group-header"><span class="metric-label">元效同组排名</span></th>`;
+  });
+  head1 += '</tr>';
+  head2 += '</tr>';
+
+  // 数据行 - 合计
+  let bodyHtml = '';
+  // 先计算合计
+  const totalByMonth = selMonths.map((m, idx) => {
+    const mi = mIdxs[idx];
+    const a = { targetRev:0, actualRev:0, targetGMV:0, actualGMV:0, budgetCost:0, actualCost:0, hc:0 };
+    fBranches.forEach(b => {
+      fChannels.forEach(ch => {
+        const d = raw[b][ch][mi];
+        a.targetRev += d.targetRev; a.actualRev += d.actualRev;
+        a.targetGMV += d.targetGMV; a.actualGMV += d.actualGMV;
+        a.budgetCost += d.budgetCost; a.actualCost += d.actualCost;
+        a.hc += d.hc;
+      });
+    });
+    a.revRate = a.targetRev > 0 ? a.actualRev/a.targetRev*100 : 0;
+    a.gmvRate = a.targetGMV > 0 ? a.actualGMV/a.targetGMV*100 : 0;
+    a.costRate = a.budgetCost > 0 ? a.actualCost/a.budgetCost*100 : 0;
+    a.rate = a.actualRev > 0 ? a.actualCost/a.actualRev*100 : 0;
+    a.targetRate = a.targetRev > 0 ? a.budgetCost/a.targetRev*100 : 0;
+    a.personEff = a.hc > 0 ? a.actualGMV/a.hc : 0;
+    a.costEff = a.actualCost > 0 ? a.actualGMV/a.actualCost : 0;
+    return a;
+  });
+  let totalTds = '';
+  totalByMonth.forEach(a => {
+    totalTds += `<td>${fmtInt(a.targetRev)}</td><td>${fmtInt(a.actualRev)}</td>
+      <td class="${valClass(a.revRate,95,85)}">${fmt(a.revRate)}%</td>
+      <td>${fmtInt(a.targetGMV)}</td><td>${fmtInt(a.actualGMV)}</td>
+      <td class="${valClass(a.gmvRate,95,85)}">${fmt(a.gmvRate)}%</td>
+      <td>${fmtInt(a.budgetCost)}</td><td>${fmtInt(a.actualCost)}</td>
+      <td class="${valClass(a.costRate,100,105,false)}">${fmt(a.costRate)}%</td>
+      <td>${fmt(a.targetRate)}%</td>
+      <td class="${valClass(a.rate,8,10,false)}">${fmt(a.rate)}%</td>
+      <td>-</td><td>-</td>
+      <td>${a.hc}</td><td>${fmt(a.personEff)}</td>
+      <td>-</td><td>-</td>
+      <td>${fmt(a.costEff,2)}</td><td>-</td><td>-</td>`;
+  });
+  bodyHtml += `<tr class="total-row"><td>合计</td>${totalTds}</tr>`;
+
+  fBranches.forEach(b => {
+    let tds = '';
+    selMonths.forEach((m, idx) => {
+      const mi = mIdxs[idx];
+      const a = { targetRev:0, actualRev:0, targetGMV:0, actualGMV:0, budgetCost:0, actualCost:0, hc:0 };
+      fChannels.forEach(ch => {
+        const d = raw[b][ch][mi];
+        a.targetRev += d.targetRev; a.actualRev += d.actualRev;
+        a.targetGMV += d.targetGMV; a.actualGMV += d.actualGMV;
+        a.budgetCost += d.budgetCost; a.actualCost += d.actualCost;
+        a.hc += d.hc;
+      });
+      a.revRate = a.targetRev > 0 ? a.actualRev/a.targetRev*100 : 0;
+      a.gmvRate = a.targetGMV > 0 ? a.actualGMV/a.targetGMV*100 : 0;
+      a.costRate = a.budgetCost > 0 ? a.actualCost/a.budgetCost*100 : 0;
+      a.rate = a.actualRev > 0 ? a.actualCost/a.actualRev*100 : 0;
+      a.targetRate = a.targetRev > 0 ? a.budgetCost/a.targetRev*100 : 0;
+      a.personEff = a.hc > 0 ? a.actualGMV/a.hc : 0;
+      a.costEff = a.actualCost > 0 ? a.actualGMV/a.actualCost : 0;
+
+      // 本月排名
+      const monthRows = fBranches.map(ob => {
+        const ma = { actualRev:0, actualGMV:0, actualCost:0, budgetCost:0, targetRev:0, targetGMV:0, hc:0, _id: ob+'_'+idx };
+        fChannels.forEach(ch => {
+          const d = raw[ob][ch][mi];
+          ma.targetRev += d.targetRev; ma.actualRev += d.actualRev;
+          ma.targetGMV += d.targetGMV; ma.actualGMV += d.actualGMV;
+          ma.budgetCost += d.budgetCost; ma.actualCost += d.actualCost;
+          ma.hc += d.hc;
+        });
+        ma.rate = ma.actualRev > 0 ? ma.actualCost/ma.actualRev*100 : 0;
+        ma.personEff = ma.hc > 0 ? ma.actualGMV/ma.hc : 0;
+        ma.costEff = ma.actualCost > 0 ? ma.actualGMV/ma.actualCost : 0;
+        return ma;
+      });
+      const mRateRank = computeRanks(monthRows, 'rate', false);
+      const mPersonRank = computeRanks(monthRows, 'personEff', true);
+      const mCostEffRank = computeRanks(monthRows, 'costEff', true);
+      // 同组排名（整体维度下同组=所有分公司集合，与全国相同；实际按城市等级分组）
+      const mRateGrpRank = computeRanks(monthRows, 'rate', false);
+      const mPersonGrpRank = computeRanks(monthRows, 'personEff', true);
+      const mCostEffGrpRank = computeRanks(monthRows, 'costEff', true);
+      const curId = b+'_'+idx;
+      const rateR = mRateRank[curId] || '-';
+      const rateGrpR = mRateGrpRank[curId] || '-';
+      const personR = mPersonRank[curId] || '-';
+      const personGrpR = mPersonGrpRank[curId] || '-';
+      const costEffR = mCostEffRank[curId] || '-';
+      const costEffGrpR = mCostEffGrpRank[curId] || '-';
+
+      tds += `<td>${fmtInt(a.targetRev)}</td><td>${fmtInt(a.actualRev)}</td>
+        <td class="${valClass(a.revRate,95,85)}">${fmt(a.revRate)}%</td>
+        <td>${fmtInt(a.targetGMV)}</td><td>${fmtInt(a.actualGMV)}</td>
+        <td class="${valClass(a.gmvRate,95,85)}">${fmt(a.gmvRate)}%</td>
+        <td>${fmtInt(a.budgetCost)}</td><td>${fmtInt(a.actualCost)}</td>
+        <td class="${valClass(a.costRate,100,105,false)}">${fmt(a.costRate)}%</td>
+        <td>${fmt(a.targetRate)}%</td>
+        <td class="${valClass(a.rate,8,10,false)}">${fmt(a.rate)}%</td>
+        <td><span class="${rankClass(rateR)}">${rateR}</span></td>
+        <td><span class="${rankClass(rateGrpR)}">${rateGrpR}</span></td>
+        <td>${a.hc}</td><td>${fmt(a.personEff)}</td>
+        <td><span class="${rankClass(personR)}">${personR}</span></td>
+        <td><span class="${rankClass(personGrpR)}">${personGrpR}</span></td>
+        <td>${fmt(a.costEff,2)}</td>
+        <td><span class="${rankClass(costEffR)}">${costEffR}</span></td>
+        <td><span class="${rankClass(costEffGrpR)}">${costEffGrpR}</span></td>`;
+    });
+    bodyHtml += `<tr><td>${b}</td>${tds}</tr>`;
+  });
+
+  document.getElementById('overall-detail-wrap').innerHTML =
+    `<table class="data-table"><thead>${head1}${head2}</thead><tbody>${bodyHtml}</tbody></table>`;
+}
+
+// ===== 渲染: 店体系累计 =====
+function renderStore(){
+  const fBranches = getFilteredBranches();
+  const fChannels = getFilteredChannels();
+  const mIdxs = getSelectedMonths().map((_,i)=>i);
+
+  // 构建排名数据集：所有分公司 × 渠道 的聚合行
+  const allRows = [];
+  branches.forEach(b => {
+    channelNames.forEach(ch => {
+      const a = aggregate(b, ch, mIdxs);
+      allRows.push({ _id: b+'|'+ch, branch: b, channel: ch, ...a });
+    });
+  });
+
+  // 全国排名
+  const natlRateRank = computeRanks(allRows, 'actualRate', false);
+  const natlPersonRank = computeRanks(allRows, 'personEff', true);
+  const natlCostEffRank = computeRanks(allRows, 'costEff', true);
+
+  // 同组排名（同渠道类型内）
+  const grpRateRank = {}, grpPersonRank = {}, grpCostEffRank = {};
+  channelNames.forEach(ch => {
+    const groupItems = allRows.filter(d => d.channel === ch);
+    const gr = computeRanks(groupItems, 'actualRate', false);
+    const gp = computeRanks(groupItems, 'personEff', true);
+    const gc = computeRanks(groupItems, 'costEff', true);
+    Object.assign(grpRateRank, gr);
+    Object.assign(grpPersonRank, gp);
+    Object.assign(grpCostEffRank, gc);
+  });
+
+  let html = '';
+  fBranches.forEach(branch => {
+    // 分公司合计行
+    const total = { targetRev:0, actualRev:0, targetGMV:0, actualGMV:0, budgetCost:0, actualCost:0, hc:0 };
+    fChannels.forEach(ch => {
+      const a = aggregate(branch, ch, mIdxs);
+      ['targetRev','actualRev','targetGMV','actualGMV','budgetCost','actualCost','hc'].forEach(k => total[k] += a[k]);
+    });
+    total.revRate = total.targetRev > 0 ? total.actualRev/total.targetRev*100 : 0;
+    total.gmvRate = total.targetGMV > 0 ? total.actualGMV/total.targetGMV*100 : 0;
+    total.costRate = total.budgetCost > 0 ? total.actualCost/total.budgetCost*100 : 0;
+    total.actualRate = total.actualRev > 0 ? total.actualCost/total.actualRev*100 : 0;
+    total.personEff = total.hc > 0 ? total.actualGMV/total.hc : 0;
+    total.costEff = total.actualCost > 0 ? total.actualGMV/total.actualCost : 0;
+
+    html += `<tr class="total-row">
+      <td>${branch}</td><td>小计</td>
+      <td>${fmtInt(total.targetRev)}</td><td>${fmtInt(total.actualRev)}</td>
+      <td class="${valClass(total.revRate,95,85)}">${fmt(total.revRate)}%</td>
+      <td>${fmtInt(total.targetGMV)}</td><td>${fmtInt(total.actualGMV)}</td>
+      <td class="${valClass(total.gmvRate,95,85)}">${fmt(total.gmvRate)}%</td>
+      <td>${fmtInt(total.budgetCost)}</td><td>${fmtInt(total.actualCost)}</td>
+      <td class="${valClass(total.costRate,100,105,false)}">${fmt(total.costRate)}%</td>
+      <td class="${valClass(total.actualRate,8,10,false)}">${fmt(total.actualRate)}%</td>
+      <td>-</td><td>-</td>
+      <td>${total.hc}</td><td>${fmt(total.personEff)}</td>
+      <td>-</td><td>-</td>
+      <td>${fmt(total.costEff,2)}</td><td>-</td><td>-</td></tr>`;
+
+    // 一级渠道行
+    fChannels.forEach(ch => {
+      const a = aggregate(branch, ch, mIdxs);
+      const rid = branch+'|'+ch;
+      const expandId = 'exp_' + branch.replace(/\s/g,'') + '_' + ch.replace(/[&\s]/g,'');
+
+      html += `<tr class="level1-row">
+        <td></td>
+        <td><span class="expand-btn" onclick="toggleExpand('${expandId}',this)" title="展开二级渠道">+</span>${ch}</td>
+        <td>${fmtInt(a.targetRev)}</td><td>${fmtInt(a.actualRev)}</td>
+        <td class="${valClass(a.revRate,95,85)}">${fmt(a.revRate)}%</td>
+        <td>${fmtInt(a.targetGMV)}</td><td>${fmtInt(a.actualGMV)}</td>
+        <td class="${valClass(a.gmvRate,95,85)}">${fmt(a.gmvRate)}%</td>
+        <td>${fmtInt(a.budgetCost)}</td><td>${fmtInt(a.actualCost)}</td>
+        <td class="${valClass(a.costRate,100,105,false)}">${fmt(a.costRate)}%</td>
+        <td class="${valClass(a.actualRate,8,10,false)}">${fmt(a.actualRate)}%</td>
+        <td>${rankDisplay(natlRateRank[rid], a.actualRate)}</td>
+        <td>${rankDisplay(grpRateRank[rid], a.actualRate)}</td>
+        <td>${a.hc}</td><td>${fmt(a.personEff)}</td>
+        <td>${rankDisplay(natlPersonRank[rid], a.personEff)}</td>
+        <td>${rankDisplay(grpPersonRank[rid], a.personEff)}</td>
+        <td>${fmt(a.costEff,2)}</td>
+        <td>${rankDisplay(natlCostEffRank[rid], a.costEff)}</td>
+        <td>${rankDisplay(grpCostEffRank[rid], a.costEff)}</td></tr>`;
+
+      // 二级渠道行
+      channelMap[ch].sub.forEach(subName => {
+        const ratio = rand(0.15, 0.55);
+        const s = {
+          targetRev: a.targetRev*ratio, actualRev: a.actualRev*ratio,
+          targetGMV: a.targetGMV*ratio, actualGMV: a.actualGMV*ratio,
+          budgetCost: a.budgetCost*ratio, actualCost: a.actualCost*ratio,
+          hc: Math.max(1, Math.round(a.hc*ratio))
+        };
+        s.revRate = s.targetRev > 0 ? s.actualRev/s.targetRev*100 : 0;
+        s.gmvRate = s.targetGMV > 0 ? s.actualGMV/s.targetGMV*100 : 0;
+        s.costRate = s.budgetCost > 0 ? s.actualCost/s.budgetCost*100 : 0;
+        s.actualRate = s.actualRev > 0 ? s.actualCost/s.actualRev*100 : 0;
+        s.personEff = s.hc > 0 ? s.actualGMV/s.hc : 0;
+        s.costEff = s.actualCost > 0 ? s.actualGMV/s.actualCost : 0;
+
+        html += `<tr class="level2-row" id="${expandId}">
+          <td></td>
+          <td style="padding-left:36px;color:#aaa">└ ${subName}</td>
+          <td>${fmtInt(s.targetRev)}</td><td>${fmtInt(s.actualRev)}</td>
+          <td class="${valClass(s.revRate,95,85)}">${fmt(s.revRate)}%</td>
+          <td>${fmtInt(s.targetGMV)}</td><td>${fmtInt(s.actualGMV)}</td>
+          <td class="${valClass(s.gmvRate,95,85)}">${fmt(s.gmvRate)}%</td>
+          <td>${fmtInt(s.budgetCost)}</td><td>${fmtInt(s.actualCost)}</td>
+          <td class="${valClass(s.costRate,100,105,false)}">${fmt(s.costRate)}%</td>
+          <td class="${valClass(s.actualRate,8,10,false)}">${fmt(s.actualRate)}%</td>
+          <td>-</td><td>-</td>
+          <td>${s.hc}</td><td>${fmt(s.personEff)}</td>
+          <td>-</td><td>-</td>
+          <td>${fmt(s.costEff,2)}</td><td>-</td><td>-</td></tr>`;
+      });
+    });
+  });
+  document.getElementById('tbody-store').innerHTML = html;
+}
+
+// ===== 渲染: 店体系明细 =====
+function renderStoreDetail(){
+  const fBranches = getFilteredBranches();
+  const fChannels = getFilteredChannels();
+  const selMonths = getSelectedMonths();
+
+  let head1 = '<tr><th rowspan="2" style="min-width:120px">分公司</th><th rowspan="2" class="col-channel">渠道</th>';
+  let head2 = '<tr class="month-group-header">';
+  selMonths.forEach(m => {
+    head1 += `<th colspan="20">${monthLabel(m)}</th>`;
+    head2 += `<th class="month-group-header"><span class="metric-label">目标收入(万)</span></th>
+      <th class="month-group-header"><span class="metric-label">实际收入(万)</span></th>
+      <th class="month-group-header"><span class="metric-label">收入达成率</span></th>
+      <th class="month-group-header"><span class="metric-label">目标GMV(万)</span></th>
+      <th class="month-group-header"><span class="metric-label">实际GMV(万)</span></th>
+      <th class="month-group-header"><span class="metric-label">GMV达成率</span></th>
+      <th class="month-group-header"><span class="metric-label">预算成本(万)</span></th>
+      <th class="month-group-header"><span class="metric-label">实际成本(万)</span></th>
+      <th class="month-group-header"><span class="metric-label">成本使用率</span></th>
+      <th class="month-group-header"><span class="metric-label">目标费率</span></th>
+      <th class="month-group-header"><span class="metric-label">实际费率</span></th>
+      <th class="month-group-header"><span class="metric-label">费率全国排名</span></th>
+      <th class="month-group-header"><span class="metric-label">费率同组排名</span></th>
+      <th class="month-group-header"><span class="metric-label">HC</span></th>
+      <th class="month-group-header"><span class="metric-label">人效(万)</span></th>
+      <th class="month-group-header"><span class="metric-label">人效全国排名</span></th>
+      <th class="month-group-header"><span class="metric-label">人效同组排名</span></th>
+      <th class="month-group-header"><span class="metric-label">元效</span></th>
+      <th class="month-group-header"><span class="metric-label">元效全国排名</span></th>
+      <th class="month-group-header"><span class="metric-label">元效同组排名</span></th>`;
+  });
+  head1 += '</tr>';
+  head2 += '</tr>';
+
+  let bodyHtml = '';
+  // 合计行
+  const storeTotalByMonth = selMonths.map((m, idx) => {
+    const a = { targetRev:0, actualRev:0, targetGMV:0, actualGMV:0, budgetCost:0, actualCost:0, hc:0 };
+    fBranches.forEach(b => {
+      fChannels.forEach(ch => {
+        const d = raw[b][ch][idx];
+        a.targetRev += d.targetRev; a.actualRev += d.actualRev;
+        a.targetGMV += d.targetGMV; a.actualGMV += d.actualGMV;
+        a.budgetCost += d.budgetCost; a.actualCost += d.actualCost;
+        a.hc += d.hc;
+      });
+    });
+    a.revRate = a.targetRev > 0 ? a.actualRev/a.targetRev*100 : 0;
+    a.gmvRate = a.targetGMV > 0 ? a.actualGMV/a.targetGMV*100 : 0;
+    a.costRate = a.budgetCost > 0 ? a.actualCost/a.budgetCost*100 : 0;
+    a.rate = a.actualRev > 0 ? a.actualCost/a.actualRev*100 : 0;
+    a.targetRate = a.targetRev > 0 ? a.budgetCost/a.targetRev*100 : 0;
+    a.personEff = a.hc > 0 ? a.actualGMV/a.hc : 0;
+    a.costEff = a.actualCost > 0 ? a.actualGMV/a.actualCost : 0;
+    return a;
+  });
+  let storeTotalTds = '';
+  storeTotalByMonth.forEach(a => {
+    storeTotalTds += `<td>${fmtInt(a.targetRev)}</td><td>${fmtInt(a.actualRev)}</td>
+      <td class="${valClass(a.revRate,95,85)}">${fmt(a.revRate)}%</td>
+      <td>${fmtInt(a.targetGMV)}</td><td>${fmtInt(a.actualGMV)}</td>
+      <td class="${valClass(a.gmvRate,95,85)}">${fmt(a.gmvRate)}%</td>
+      <td>${fmtInt(a.budgetCost)}</td><td>${fmtInt(a.actualCost)}</td>
+      <td class="${valClass(a.costRate,100,105,false)}">${fmt(a.costRate)}%</td>
+      <td>${fmt(a.targetRate)}%</td>
+      <td class="${valClass(a.rate,8,10,false)}">${fmt(a.rate)}%</td>
+      <td>-</td><td>-</td>
+      <td>${a.hc}</td><td>${fmt(a.personEff)}</td>
+      <td>-</td><td>-</td>
+      <td>${fmt(a.costEff,2)}</td><td>-</td><td>-</td>`;
+  });
+  bodyHtml += `<tr class="total-row"><td>合计</td><td></td>${storeTotalTds}</tr>`;
+
+  fBranches.forEach(b => {
+    // 分公司小计行
+    let subTds = '';
+    selMonths.forEach((m, idx) => {
+      const a = { targetRev:0, actualRev:0, targetGMV:0, actualGMV:0, budgetCost:0, actualCost:0, hc:0 };
+      fChannels.forEach(ch => {
+        const d = raw[b][ch][idx];
+        a.targetRev += d.targetRev; a.actualRev += d.actualRev;
+        a.targetGMV += d.targetGMV; a.actualGMV += d.actualGMV;
+        a.budgetCost += d.budgetCost; a.actualCost += d.actualCost;
+        a.hc += d.hc;
+      });
+      a.revRate = a.targetRev > 0 ? a.actualRev/a.targetRev*100 : 0;
+      a.gmvRate = a.targetGMV > 0 ? a.actualGMV/a.targetGMV*100 : 0;
+      a.costRate = a.budgetCost > 0 ? a.actualCost/a.budgetCost*100 : 0;
+      a.rate = a.actualRev > 0 ? a.actualCost/a.actualRev*100 : 0;
+      a.targetRate = a.targetRev > 0 ? a.budgetCost/a.targetRev*100 : 0;
+      a.personEff = a.hc > 0 ? a.actualGMV/a.hc : 0;
+      a.costEff = a.actualCost > 0 ? a.actualGMV/a.actualCost : 0;
+
+      subTds += `<td>${fmtInt(a.targetRev)}</td><td>${fmtInt(a.actualRev)}</td>
+        <td class="${valClass(a.revRate,95,85)}">${fmt(a.revRate)}%</td>
+        <td>${fmtInt(a.targetGMV)}</td><td>${fmtInt(a.actualGMV)}</td>
+        <td class="${valClass(a.gmvRate,95,85)}">${fmt(a.gmvRate)}%</td>
+        <td>${fmtInt(a.budgetCost)}</td><td>${fmtInt(a.actualCost)}</td>
+        <td class="${valClass(a.costRate,100,105,false)}">${fmt(a.costRate)}%</td>
+        <td>${fmt(a.targetRate)}%</td>
+        <td class="${valClass(a.rate,8,10,false)}">${fmt(a.rate)}%</td>
+        <td>-</td><td>-</td>
+        <td>${a.hc}</td><td>${fmt(a.personEff)}</td>
+        <td>-</td><td>-</td>
+        <td>${fmt(a.costEff,2)}</td><td>-</td><td>-</td>`;
+    });
+    bodyHtml += `<tr class="total-row"><td>${b}</td><td>小计</td>${subTds}</tr>`;
+
+    // 一级渠道行
+    fChannels.forEach(ch => {
+      let tds = '';
+      selMonths.forEach((m, idx) => {
+        const d = raw[b][ch][idx];
+        const revRate = d.targetRev > 0 ? d.actualRev/d.targetRev*100 : 0;
+        const gmvRate = d.targetGMV > 0 ? d.actualGMV/d.targetGMV*100 : 0;
+        const costRate = d.budgetCost > 0 ? d.actualCost/d.budgetCost*100 : 0;
+        const rate = d.actualRev > 0 ? d.actualCost/d.actualRev*100 : 0;
+        const targetRate = d.targetRev > 0 ? d.budgetCost/d.targetRev*100 : 0;
+        const personEff = d.hc > 0 ? d.actualGMV/d.hc : 0;
+        const costEff = d.actualCost > 0 ? d.actualGMV/d.actualCost : 0;
+
+        // 本月排名
+        const monthRows = [];
+        branches.forEach(ob => {
+          channelNames.forEach(och => {
+            const md = raw[ob][och][idx];
+            monthRows.push({ _id: ob+'|'+och+'|'+idx, rate: md.actualRev>0?md.actualCost/md.actualRev*100:0, personEff: md.hc>0?md.actualGMV/md.hc:0 });
+          });
+        });
+        const mRateRank = computeRanks(monthRows, 'rate', false);
+        const mPersonRank = computeRanks(monthRows, 'personEff', true);
+        const curId = b+'|'+ch+'|'+idx;
+        const rateR = mRateRank[curId] || '-';
+        const personR = mPersonRank[curId] || '-';
+
+        // 同组排名（同渠道类型内）
+        const grpMonthRows = [];
+        branches.forEach(ob => {
+          const md = raw[ob][ch][idx];
+          grpMonthRows.push({ _id: ob+'|'+ch+'|'+idx, rate: md.actualRev>0?md.actualCost/md.actualRev*100:0, personEff: md.hc>0?md.actualGMV/md.hc:0, costEff: md.actualCost>0?md.actualGMV/md.actualCost:0 });
+        });
+        const mGrpRateRank = computeRanks(grpMonthRows, 'rate', false);
+        const mGrpPersonRank = computeRanks(grpMonthRows, 'personEff', true);
+        const mGrpCostEffRank = computeRanks(grpMonthRows, 'costEff', true);
+        const rateGrpR = mGrpRateRank[curId] || '-';
+        const personGrpR = mGrpPersonRank[curId] || '-';
+        const costEffGrpR = mGrpCostEffRank[curId] || '-';
+
+        tds += `<td>${fmtInt(d.targetRev)}</td><td>${fmtInt(d.actualRev)}</td>
+          <td class="${valClass(revRate,95,85)}">${fmt(revRate)}%</td>
+          <td>${fmtInt(d.targetGMV)}</td><td>${fmtInt(d.actualGMV)}</td>
+          <td class="${valClass(gmvRate,95,85)}">${fmt(gmvRate)}%</td>
+          <td>${fmtInt(d.budgetCost)}</td><td>${fmtInt(d.actualCost)}</td>
+          <td class="${valClass(costRate,100,105,false)}">${fmt(costRate)}%</td>
+          <td>${fmt(targetRate)}%</td>
+          <td class="${valClass(rate,8,10,false)}">${fmt(rate)}%</td>
+          <td><span class="${rankClass(rateR)}">${rateR}</span></td>
+          <td><span class="${rankClass(rateGrpR)}">${rateGrpR}</span></td>
+          <td>${d.hc}</td><td>${fmt(personEff)}</td>
+          <td><span class="${rankClass(personR)}">${personR}</span></td>
+          <td><span class="${rankClass(personGrpR)}">${personGrpR}</span></td>
+          <td>${fmt(costEff,2)}</td>
+          <td><span class="${rankClass(costEffR)}">${costEffR}</span></td>
+          <td><span class="${rankClass(costEffGrpR)}">${costEffGrpR}</span></td>`;
+      });
+      const expandId = 'expd_' + b.replace(/\s/g,'') + '_' + ch.replace(/[&\s]/g,'');
+
+      bodyHtml += `<tr class="level1-row">
+        <td></td>
+        <td><span class="expand-btn" onclick="toggleExpand('${expandId}',this)" title="展开二级渠道">+</span>${ch}</td>
+        ${tds}</tr>`;
+
+      // 二级渠道行
+      channelMap[ch].sub.forEach(subName => {
+        let subTds2 = '';
+        selMonths.forEach((m, idx) => {
+          const d = raw[b][ch][idx];
+          const ratio = rand(0.15, 0.55);
+          const targetRev = d.targetRev * ratio;
+          const actualRev = d.actualRev * ratio;
+          const targetGMV = d.targetGMV * ratio;
+          const actualGMV = d.actualGMV * ratio;
+          const budgetCost = d.budgetCost * ratio;
+          const actualCost = d.actualCost * ratio;
+          const hc = Math.max(1, Math.round(d.hc * ratio));
+          const revRate = targetRev > 0 ? actualRev/targetRev*100 : 0;
+          const gmvRate = targetGMV > 0 ? actualGMV/targetGMV*100 : 0;
+          const costRate = budgetCost > 0 ? actualCost/budgetCost*100 : 0;
+          const rate = actualRev > 0 ? actualCost/actualRev*100 : 0;
+          const targetRate = targetRev > 0 ? budgetCost/targetRev*100 : 0;
+          const personEff = hc > 0 ? actualGMV/hc : 0;
+          const costEff = actualCost > 0 ? actualGMV/actualCost : 0;
+          subTds2 += `<td>${fmtInt(targetRev)}</td><td>${fmtInt(actualRev)}</td>
+            <td class="${valClass(revRate,95,85)}">${fmt(revRate)}%</td>
+            <td>${fmtInt(targetGMV)}</td><td>${fmtInt(actualGMV)}</td>
+            <td class="${valClass(gmvRate,95,85)}">${fmt(gmvRate)}%</td>
+            <td>${fmtInt(budgetCost)}</td><td>${fmtInt(actualCost)}</td>
+            <td class="${valClass(costRate,100,105,false)}">${fmt(costRate)}%</td>
+            <td>${fmt(targetRate)}%</td>
+            <td class="${valClass(rate,8,10,false)}">${fmt(rate)}%</td>
+            <td>-</td><td>-</td>
+            <td>${hc}</td><td>${fmt(personEff)}</td>
+            <td>-</td><td>-</td>
+            <td>${fmt(costEff,2)}</td><td>-</td><td>-</td>`;
+        });
+
+        bodyHtml += `<tr class="level2-row" id="${expandId}">
+          <td></td>
+          <td style="padding-left:36px;color:#aaa">└ ${subName}</td>
+          ${subTds2}</tr>`;
+      });
+    });
+  });
+
+  document.getElementById('store-detail-wrap').innerHTML =
+    `<table class="data-table"><thead>${head1}${head2}</thead><tbody>${bodyHtml}</tbody></table>`;
+}
+
+// ===== KPI 更新 =====
+function updateKPI(){
+  const fBranches = getFilteredBranches();
+  const fChannels = getFilteredChannels();
+  const mIdxs = getSelectedMonths().map((_,i)=>i);
+  const t = { targetRev:0, actualRev:0, targetGMV:0, actualGMV:0, budgetCost:0, actualCost:0, hc:0 };
+  fBranches.forEach(b => fChannels.forEach(ch => {
+    const a = aggregate(b, ch, mIdxs);
+    ['targetRev','actualRev','targetGMV','actualGMV','budgetCost','actualCost','hc'].forEach(k => t[k] += a[k]);
+  }));
+  const rate = t.actualRev>0?t.actualCost/t.actualRev*100:0;
+  const costRate = t.budgetCost>0?t.actualCost/t.budgetCost*100:0;
+  const revRate = t.targetRev>0?t.actualRev/t.targetRev*100:0;
+  const gmvRate = t.targetGMV>0?t.actualGMV/t.targetGMV*100:0;
+  const personEff = t.hc>0?t.actualGMV/t.hc:0;
+  const costEff = t.actualCost>0?t.actualGMV/t.actualCost:0;
+
+  // 中国区
+  document.getElementById('kpiRate').textContent = rate.toFixed(1)+'%';
+  document.getElementById('kpiCostRate').textContent = costRate.toFixed(1)+'%';
+  document.getElementById('kpiRevenue').textContent = revRate.toFixed(1)+'%';
+  // 分公司（使用相同聚合数据，实际场景应展示平均或TOP）
+  document.getElementById('kpiBranchRate').textContent = rate.toFixed(1)+'%';
+  document.getElementById('kpiBranchCostRate').textContent = costRate.toFixed(1)+'%';
+  document.getElementById('kpiBranchRevenue').textContent = revRate.toFixed(1)+'%';
+  document.getElementById('kpiGMV').textContent = gmvRate.toFixed(1)+'%';
+  document.getElementById('kpiPersonEff').textContent = personEff.toFixed(1)+'万';
+  document.getElementById('kpiCostEff').textContent = costEff.toFixed(2);
+}
+
+// ===== 交互 =====
+function switchTab(name, btn){
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('panel-'+name).classList.add('active');
+}
+
+function switchSubTab(btn, id){
+  btn.parentElement.querySelectorAll('.sub-tab-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  const panel = btn.closest('.tab-panel');
+  panel.querySelectorAll('[id$="-cumul"], [id$="-detail"]').forEach(el => el.style.display='none');
+  document.getElementById(id).style.display='block';
+}
+
+function toggleExpand(id, btn){
+  btn.classList.toggle('open');
+  const isOpen = btn.classList.contains('open');
+  btn.textContent = isOpen ? '−' : '+';
+  document.querySelectorAll('#'+id).forEach(el => {
+    if(isOpen) el.classList.add('show');
+    else el.classList.remove('show');
+  });
+}
+
+function resetFilter(){
+  document.getElementById('selMonth').value = '3';
+  document.getElementById('selBranch').value = 'all';
+  document.getElementById('selChannel').value = 'all';
+  refreshAll();
+}
+
+function refreshAll(){
+  renderOverall();
+  renderOverallDetail();
+  renderStore();
+  renderStoreDetail();
+  updateKPI();
+}
+
+// 初始化
+refreshAll();
+</script>
+</body>
+</html>
