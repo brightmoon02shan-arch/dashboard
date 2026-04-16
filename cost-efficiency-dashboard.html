@@ -579,7 +579,7 @@ function renderOverallDetail(){
     return a;
   });
   let totalTds = '';
-  totalByMonth.forEach(a => {
+  totalByMonth.forEach((a, idx) => {
     const _sep = idx === 0 ? ' class="month-sep"' : '';
     totalTds += `<td${_sep}>${fmtInt(a.targetRev)}</td><td>${fmtInt(a.actualRev)}</td>
       <td class="${valClass(a.revRate,95,85)}">${fmt(a.revRate)}%</td>
@@ -851,7 +851,7 @@ function renderStoreDetail(){
     return a;
   });
   let storeTotalTds = '';
-  storeTotalByMonth.forEach(a => {
+  storeTotalByMonth.forEach((a, idx) => {
     const _sep = idx === 0 ? ' class="month-sep"' : '';
     storeTotalTds += `<td${_sep}>${fmtInt(a.targetRev)}</td><td>${fmtInt(a.actualRev)}</td>
       <td class="${valClass(a.revRate,95,85)}">${fmt(a.revRate)}%</td>
