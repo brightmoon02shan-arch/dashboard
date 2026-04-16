@@ -119,6 +119,9 @@ body { font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
 .rank-group th { background: #f0f4ff !important; color: #4facfe; font-size: 12px; }
 .rank-sub { font-size: 11px; color: #888; font-weight: 400; }
 
+/* 月份分割线 */
+.month-sep { border-left: 3px solid #4facfe !important; }
+
 /* 响应式 */
 @media (max-width: 900px) {
   .kpi-row { grid-template-columns: repeat(2, 1fr); }
@@ -178,16 +181,16 @@ body { font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
       <div class="kpi-label">累计人力成本使用率</div>
       <div class="kpi-value" id="kpiCostRate">96.2%</div>
       <div class="kpi-sub">
-        <span>预算 <b id="kpiBudget">2,850万</b></span>
-        <span>实际 <b id="kpiActual">2,742万</b></span>
+        <span>预算 <b id="kpiBudget">3.42亿</b></span>
+        <span>实际 <b id="kpiActual">3.28亿</b></span>
       </div>
     </div>
     <div class="kpi-card revenue">
       <div class="kpi-label">累计收入达成率</div>
       <div class="kpi-value" id="kpiRevenue">92.5%</div>
       <div class="kpi-sub">
-        <span>目标 <b id="kpiRevTarget">3.56亿</b></span>
-        <span>实际 <b id="kpiRevActual">3.30亿</b></span>
+        <span>目标 <b id="kpiRevTarget">4.27亿</b></span>
+        <span>实际 <b id="kpiRevActual">3.96亿</b></span>
       </div>
     </div>
   </div>
@@ -525,7 +528,7 @@ function renderOverallDetail(){
   let head1 = '<tr><th rowspan="2" style="min-width:120px">分公司</th>';
   let head2 = '<tr class="month-group-header">';
   selMonths.forEach(m => {
-    head1 += `<th colspan="20">${monthLabel(m)}</th>`;
+    head1 += `<th colspan="20" style="border-left:3px solid #4facfe">${monthLabel(m)}</th>`;
     head2 += `<th class="month-group-header"><span class="metric-label">目标收入(万)</span></th>
       <th class="month-group-header"><span class="metric-label">实际收入(万)</span></th>
       <th class="month-group-header"><span class="metric-label">收入达成率</span></th>
@@ -576,7 +579,7 @@ function renderOverallDetail(){
   });
   let totalTds = '';
   totalByMonth.forEach(a => {
-    totalTds += `<td>${fmtInt(a.targetRev)}</td><td>${fmtInt(a.actualRev)}</td>
+    totalTds += `<td class="month-sep">${fmtInt(a.targetRev)}</td><td>${fmtInt(a.actualRev)}</td>
       <td class="${valClass(a.revRate,95,85)}">${fmt(a.revRate)}%</td>
       <td>${fmtInt(a.targetGMV)}</td><td>${fmtInt(a.actualGMV)}</td>
       <td class="${valClass(a.gmvRate,95,85)}">${fmt(a.gmvRate)}%</td>
@@ -641,7 +644,7 @@ function renderOverallDetail(){
       const costEffR = mCostEffRank[curId] || '-';
       const costEffGrpR = mCostEffGrpRank[curId] || '-';
 
-      tds += `<td>${fmtInt(a.targetRev)}</td><td>${fmtInt(a.actualRev)}</td>
+      tds += `<td class="month-sep">${fmtInt(a.targetRev)}</td><td>${fmtInt(a.actualRev)}</td>
         <td class="${valClass(a.revRate,95,85)}">${fmt(a.revRate)}%</td>
         <td>${fmtInt(a.targetGMV)}</td><td>${fmtInt(a.actualGMV)}</td>
         <td class="${valClass(a.gmvRate,95,85)}">${fmt(a.gmvRate)}%</td>
@@ -796,7 +799,7 @@ function renderStoreDetail(){
   let head1 = '<tr><th rowspan="2" style="min-width:120px">分公司</th><th rowspan="2" class="col-channel">渠道</th>';
   let head2 = '<tr class="month-group-header">';
   selMonths.forEach(m => {
-    head1 += `<th colspan="20">${monthLabel(m)}</th>`;
+    head1 += `<th colspan="20" style="border-left:3px solid #4facfe">${monthLabel(m)}</th>`;
     head2 += `<th class="month-group-header"><span class="metric-label">目标收入(万)</span></th>
       <th class="month-group-header"><span class="metric-label">实际收入(万)</span></th>
       <th class="month-group-header"><span class="metric-label">收入达成率</span></th>
@@ -845,7 +848,7 @@ function renderStoreDetail(){
   });
   let storeTotalTds = '';
   storeTotalByMonth.forEach(a => {
-    storeTotalTds += `<td>${fmtInt(a.targetRev)}</td><td>${fmtInt(a.actualRev)}</td>
+    storeTotalTds += `<td class="month-sep">${fmtInt(a.targetRev)}</td><td>${fmtInt(a.actualRev)}</td>
       <td class="${valClass(a.revRate,95,85)}">${fmt(a.revRate)}%</td>
       <td>${fmtInt(a.targetGMV)}</td><td>${fmtInt(a.actualGMV)}</td>
       <td class="${valClass(a.gmvRate,95,85)}">${fmt(a.gmvRate)}%</td>
@@ -880,7 +883,7 @@ function renderStoreDetail(){
       a.personEff = a.hc > 0 ? a.actualGMV/a.hc : 0;
       a.costEff = a.actualCost > 0 ? a.actualGMV/a.actualCost : 0;
 
-      subTds += `<td>${fmtInt(a.targetRev)}</td><td>${fmtInt(a.actualRev)}</td>
+      subTds += `<td class="month-sep">${fmtInt(a.targetRev)}</td><td>${fmtInt(a.actualRev)}</td>
         <td class="${valClass(a.revRate,95,85)}">${fmt(a.revRate)}%</td>
         <td>${fmtInt(a.targetGMV)}</td><td>${fmtInt(a.actualGMV)}</td>
         <td class="${valClass(a.gmvRate,95,85)}">${fmt(a.gmvRate)}%</td>
@@ -935,7 +938,7 @@ function renderStoreDetail(){
         const personGrpR = mGrpPersonRank[curId] || '-';
         const costEffGrpR = mGrpCostEffRank[curId] || '-';
 
-        tds += `<td>${fmtInt(d.targetRev)}</td><td>${fmtInt(d.actualRev)}</td>
+        tds += `<td class="month-sep">${fmtInt(d.targetRev)}</td><td>${fmtInt(d.actualRev)}</td>
           <td class="${valClass(revRate,95,85)}">${fmt(revRate)}%</td>
           <td>${fmtInt(d.targetGMV)}</td><td>${fmtInt(d.actualGMV)}</td>
           <td class="${valClass(gmvRate,95,85)}">${fmt(gmvRate)}%</td>
@@ -979,7 +982,7 @@ function renderStoreDetail(){
           const targetRate = targetRev > 0 ? budgetCost/targetRev*100 : 0;
           const personEff = hc > 0 ? actualGMV/hc : 0;
           const costEff = actualCost > 0 ? actualGMV/actualCost : 0;
-          subTds2 += `<td>${fmtInt(targetRev)}</td><td>${fmtInt(actualRev)}</td>
+          subTds2 += `<td class="month-sep">${fmtInt(targetRev)}</td><td>${fmtInt(actualRev)}</td>
             <td class="${valClass(revRate,95,85)}">${fmt(revRate)}%</td>
             <td>${fmtInt(targetGMV)}</td><td>${fmtInt(actualGMV)}</td>
             <td class="${valClass(gmvRate,95,85)}">${fmt(gmvRate)}%</td>
@@ -1007,9 +1010,30 @@ function renderStoreDetail(){
 
 // ===== KPI 更新 =====
 function updateKPI(){
+  const mIdxs = getSelectedMonths().map((_,i)=>i);
+
+  // 中国区：全部12个分公司聚合（数值大，亿/千万级）
+  const cnT = { targetRev:0, actualRev:0, targetGMV:0, actualGMV:0, budgetCost:0, actualCost:0, hc:0 };
+  branches.forEach(b => channelNames.forEach(ch => {
+    const a = aggregate(b, ch, mIdxs);
+    ['targetRev','actualRev','targetGMV','actualGMV','budgetCost','actualCost','hc'].forEach(k => cnT[k] += a[k]);
+  }));
+  const cnRate = cnT.actualRev>0?cnT.actualCost/cnT.actualRev*100:0;
+  const cnCostRate = cnT.budgetCost>0?cnT.actualCost/cnT.budgetCost*100:0;
+  const cnRevRate = cnT.targetRev>0?cnT.actualRev/cnT.targetRev*100:0;
+
+  // 中国区卡片
+  document.getElementById('kpiRate').textContent = cnRate.toFixed(1)+'%';
+  document.getElementById('kpiBudget').textContent = (cnT.budgetCost/10000).toFixed(2)+'亿';
+  document.getElementById('kpiActual').textContent = (cnT.actualCost/10000).toFixed(2)+'亿';
+  document.getElementById('kpiCostRate').textContent = cnCostRate.toFixed(1)+'%';
+  document.getElementById('kpiRevTarget').textContent = (cnT.targetRev/10000).toFixed(2)+'亿';
+  document.getElementById('kpiRevActual').textContent = (cnT.actualRev/10000).toFixed(2)+'亿';
+  document.getElementById('kpiRevenue').textContent = cnRevRate.toFixed(1)+'%';
+
+  // 分公司：筛选后的分公司聚合（数值较小，万级）
   const fBranches = getFilteredBranches();
   const fChannels = getFilteredChannels();
-  const mIdxs = getSelectedMonths().map((_,i)=>i);
   const t = { targetRev:0, actualRev:0, targetGMV:0, actualGMV:0, budgetCost:0, actualCost:0, hc:0 };
   fBranches.forEach(b => fChannels.forEach(ch => {
     const a = aggregate(b, ch, mIdxs);
@@ -1022,15 +1046,17 @@ function updateKPI(){
   const personEff = t.hc>0?t.actualGMV/t.hc:0;
   const costEff = t.actualCost>0?t.actualGMV/t.actualCost:0;
 
-  // 中国区
-  document.getElementById('kpiRate').textContent = rate.toFixed(1)+'%';
-  document.getElementById('kpiCostRate').textContent = costRate.toFixed(1)+'%';
-  document.getElementById('kpiRevenue').textContent = revRate.toFixed(1)+'%';
-  // 分公司（使用相同聚合数据，实际场景应展示平均或TOP）
+  // 分公司卡片
   document.getElementById('kpiBranchRate').textContent = rate.toFixed(1)+'%';
+  document.getElementById('kpiBranchBudget').textContent = (t.budgetCost).toFixed(0)+'万';
+  document.getElementById('kpiBranchActual').textContent = (t.actualCost).toFixed(0)+'万';
   document.getElementById('kpiBranchCostRate').textContent = costRate.toFixed(1)+'%';
+  document.getElementById('kpiBranchRevTarget').textContent = (t.targetRev).toFixed(0)+'万';
+  document.getElementById('kpiBranchRevActual').textContent = (t.actualRev).toFixed(0)+'万';
   document.getElementById('kpiBranchRevenue').textContent = revRate.toFixed(1)+'%';
   document.getElementById('kpiGMV').textContent = gmvRate.toFixed(1)+'%';
+  document.getElementById('kpiGmvTarget').textContent = (t.targetGMV).toFixed(0)+'万';
+  document.getElementById('kpiGmvActual').textContent = (t.actualGMV).toFixed(0)+'万';
   document.getElementById('kpiPersonEff').textContent = personEff.toFixed(1)+'万';
   document.getElementById('kpiCostEff').textContent = costEff.toFixed(2);
 }
