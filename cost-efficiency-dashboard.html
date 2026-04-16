@@ -888,6 +888,27 @@ function renderStoreDetail(){
       a.personEff = a.hc > 0 ? a.actualGMV/a.hc : 0;
       a.costEff = a.actualCost > 0 ? a.actualGMV/a.actualCost : 0;
 
+      // 小计排名：按分公司×全部渠道聚合，在全部分公司中排名
+      const subNatRows = branches.map(ob => {
+        const sa = { actualRev:0, actualCost:0, actualGMV:0, hc:0, _id: ob+'_'+idx };
+        channelNames.forEach(och => {
+          const d = raw[ob][och][idx];
+          sa.actualRev += d.actualRev; sa.actualCost += d.actualCost;
+          sa.actualGMV += d.actualGMV; sa.hc += d.hc;
+        });
+        sa.rate = sa.actualRev > 0 ? sa.actualCost/sa.actualRev*100 : 0;
+        sa.personEff = sa.hc > 0 ? sa.actualGMV/sa.hc : 0;
+        sa.costEff = sa.actualCost > 0 ? sa.actualGMV/sa.actualCost : 0;
+        return sa;
+      });
+      const snRateRank = computeRanks(subNatRows, 'rate', false);
+      const snPersonRank = computeRanks(subNatRows, 'personEff', true);
+      const snCostEffRank = computeRanks(subNatRows, 'costEff', true);
+      const subCurId = b+'_'+idx;
+      const sRateR = snRateRank[subCurId] || '-';
+      const sPersonR = snPersonRank[subCurId] || '-';
+      const sCostEffR = snCostEffRank[subCurId] || '-';
+
       const _sep = idx > 0 ? ' class="month-sep"' : '';
       subTds += `<td${_sep}>${fmtInt(a.targetRev)}</td><td>${fmtInt(a.actualRev)}</td>
         <td class="${valClass(a.revRate,95,85)}">${fmt(a.revRate)}%</td>
@@ -897,10 +918,14 @@ function renderStoreDetail(){
         <td class="${valClass(a.costRate,100,105,false)}">${fmt(a.costRate)}%</td>
         <td>${fmt(a.targetRate)}%</td>
         <td class="${valClass(a.rate,8,10,false)}">${fmt(a.rate)}%</td>
-        <td>-</td><td>-</td>
+        <td><span class="${rankClass(sRateR)}">${sRateR}</span></td>
+        <td><span class="${rankClass(sRateR)}">${sRateR}</span></td>
         <td>${a.hc}</td><td>${fmt(a.personEff)}</td>
-        <td>-</td><td>-</td>
-        <td>${fmt(a.costEff,2)}</td><td>-</td><td>-</td>`;
+        <td><span class="${rankClass(sPersonR)}">${sPersonR}</span></td>
+        <td><span class="${rankClass(sPersonR)}">${sPersonR}</span></td>
+        <td>${fmt(a.costEff,2)}</td>
+        <td><span class="${rankClass(sCostEffR)}">${sCostEffR}</span></td>
+        <td><span class="${rankClass(sCostEffR)}">${sCostEffR}</span></td>`;
     });
     bodyHtml += `<tr class="total-row"><td>${b}</td><td>小计</td>${subTds}</tr>`;
 
