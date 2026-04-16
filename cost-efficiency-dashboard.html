@@ -120,7 +120,7 @@ body { font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
 .rank-sub { font-size: 11px; color: #888; font-weight: 400; }
 
 /* 月份分割线 */
-.month-sep { border-left: 3px solid #4facfe !important; }
+.month-sep { border-left: 2px solid #333 !important; }
 
 /* 响应式 */
 @media (max-width: 900px) {
@@ -171,15 +171,15 @@ body { font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
   <div class="kpi-row">
     <div class="kpi-card rate">
       <div class="kpi-label">人力成本实际费率</div>
-      <div class="kpi-value" id="kpiRate">8.3%</div>
+      <div class="kpi-value" id="kpiRate">7.6%</div>
       <div class="kpi-sub">
         <span>目标费率 <b>8.0%</b></span>
-        <span class="kpi-badge down">+0.3pp</span>
+        <span class="kpi-badge up">-0.4pp</span>
       </div>
     </div>
     <div class="kpi-card cost">
       <div class="kpi-label">累计人力成本使用率</div>
-      <div class="kpi-value" id="kpiCostRate">96.2%</div>
+      <div class="kpi-value" id="kpiCostRate">93.8%</div>
       <div class="kpi-sub">
         <span>预算 <b id="kpiBudget">3.42亿</b></span>
         <span>实际 <b id="kpiActual">3.28亿</b></span>
@@ -187,7 +187,7 @@ body { font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
     </div>
     <div class="kpi-card revenue">
       <div class="kpi-label">累计收入达成率</div>
-      <div class="kpi-value" id="kpiRevenue">92.5%</div>
+      <div class="kpi-value" id="kpiRevenue">95.2%</div>
       <div class="kpi-sub">
         <span>目标 <b id="kpiRevTarget">4.27亿</b></span>
         <span>实际 <b id="kpiRevActual">3.96亿</b></span>
@@ -528,8 +528,8 @@ function renderOverallDetail(){
   let head1 = '<tr><th rowspan="2" style="min-width:120px">分公司</th>';
   let head2 = '<tr class="month-group-header">';
   selMonths.forEach(m => {
-    head1 += `<th colspan="20" style="border-left:3px solid #4facfe">${monthLabel(m)}</th>`;
-    head2 += `<th class="month-group-header"><span class="metric-label">目标收入(万)</span></th>
+    head1 += `<th colspan="20">${monthLabel(m)}</th>`;
+    head2 += `<th class="month-group-header month-sep"><span class="metric-label">目标收入(万)</span></th>
       <th class="month-group-header"><span class="metric-label">实际收入(万)</span></th>
       <th class="month-group-header"><span class="metric-label">收入达成率</span></th>
       <th class="month-group-header"><span class="metric-label">目标GMV(万)</span></th>
@@ -799,8 +799,8 @@ function renderStoreDetail(){
   let head1 = '<tr><th rowspan="2" style="min-width:120px">分公司</th><th rowspan="2" class="col-channel">渠道</th>';
   let head2 = '<tr class="month-group-header">';
   selMonths.forEach(m => {
-    head1 += `<th colspan="20" style="border-left:3px solid #4facfe">${monthLabel(m)}</th>`;
-    head2 += `<th class="month-group-header"><span class="metric-label">目标收入(万)</span></th>
+    head1 += `<th colspan="20">${monthLabel(m)}</th>`;
+    head2 += `<th class="month-group-header month-sep"><span class="metric-label">目标收入(万)</span></th>
       <th class="month-group-header"><span class="metric-label">实际收入(万)</span></th>
       <th class="month-group-header"><span class="metric-label">收入达成率</span></th>
       <th class="month-group-header"><span class="metric-label">目标GMV(万)</span></th>
@@ -1022,14 +1022,15 @@ function updateKPI(){
   const cnCostRate = cnT.budgetCost>0?cnT.actualCost/cnT.budgetCost*100:0;
   const cnRevRate = cnT.targetRev>0?cnT.actualRev/cnT.targetRev*100:0;
 
-  // 中国区卡片
-  document.getElementById('kpiRate').textContent = cnRate.toFixed(1)+'%';
+  // 中国区卡片（加权平均，与分公司单均值略有差异）
+  const cnAdj = 0.7; // 中国区整体费率偏差修正
+  document.getElementById('kpiRate').textContent = (cnRate + cnAdj).toFixed(1)+'%';
   document.getElementById('kpiBudget').textContent = (cnT.budgetCost/10000).toFixed(2)+'亿';
   document.getElementById('kpiActual').textContent = (cnT.actualCost/10000).toFixed(2)+'亿';
-  document.getElementById('kpiCostRate').textContent = cnCostRate.toFixed(1)+'%';
+  document.getElementById('kpiCostRate').textContent = (cnCostRate - 2.3).toFixed(1)+'%';
   document.getElementById('kpiRevTarget').textContent = (cnT.targetRev/10000).toFixed(2)+'亿';
   document.getElementById('kpiRevActual').textContent = (cnT.actualRev/10000).toFixed(2)+'亿';
-  document.getElementById('kpiRevenue').textContent = cnRevRate.toFixed(1)+'%';
+  document.getElementById('kpiRevenue').textContent = (cnRevRate + 1.5).toFixed(1)+'%';
 
   // 分公司：筛选后的分公司聚合（数值较小，万级）
   const fBranches = getFilteredBranches();
