@@ -922,14 +922,16 @@ function renderStoreDetail(){
         branches.forEach(ob => {
           channelNames.forEach(och => {
             const md = raw[ob][och][idx];
-            monthRows.push({ _id: ob+'|'+och+'|'+idx, rate: md.actualRev>0?md.actualCost/md.actualRev*100:0, personEff: md.hc>0?md.actualGMV/md.hc:0 });
+            monthRows.push({ _id: ob+'|'+och+'|'+idx, rate: md.actualRev>0?md.actualCost/md.actualRev*100:0, personEff: md.hc>0?md.actualGMV/md.hc:0, costEff: md.actualCost>0?md.actualGMV/md.actualCost:0 });
           });
         });
         const mRateRank = computeRanks(monthRows, 'rate', false);
         const mPersonRank = computeRanks(monthRows, 'personEff', true);
+        const mCostEffRank = computeRanks(monthRows, 'costEff', true);
         const curId = b+'|'+ch+'|'+idx;
         const rateR = mRateRank[curId] || '-';
         const personR = mPersonRank[curId] || '-';
+        const costEffR = mCostEffRank[curId] || '-';
 
         // 同组排名（同渠道类型内）
         const grpMonthRows = [];
