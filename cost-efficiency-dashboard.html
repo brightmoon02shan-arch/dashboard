@@ -129,6 +129,24 @@ body { font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
   .main { padding: 12px 16px; }
 }
 @media (max-width: 600px) { .kpi-row { grid-template-columns: 1fr; } }
+
+/* Section title */
+.section-title { font-size: 14px; font-weight: 600; color: #333; padding: 10px 0 8px; margin-bottom: 12px; display: flex; align-items: center; gap: 6px; }
+.section-title::before { content: ''; width: 3px; height: 16px; background: #4facfe; border-radius: 2px; }
+
+/* Bar chart */
+.chart-container { background: #fafbff; border-radius: 8px; padding: 16px; margin-bottom: 16px; }
+.chart-legend { display: flex; gap: 20px; justify-content: center; margin-bottom: 16px; flex-wrap: wrap; }
+.legend-item { display: flex; align-items: center; gap: 5px; font-size: 12px; color: #666; }
+.legend-color { width: 12px; height: 12px; border-radius: 2px; flex-shrink: 0; }
+.bar-chart-area { display: flex; align-items: flex-end; gap: 6px; min-height: 220px; padding: 30px 10px 0; border-bottom: 1px solid #e0e0e0; overflow-x: auto; }
+.bar-group { display: flex; flex-direction: column; align-items: center; flex: 1; min-width: 80px; }
+.bars-wrap { display: flex; align-items: flex-end; gap: 2px; height: 180px; }
+.bar-item { width: 18px; border-radius: 3px 3px 0 0; position: relative; min-height: 2px; transition: all 0.3s; cursor: pointer; }
+.bar-item:hover { opacity: 0.75; transform: scaleY(1.02); transform-origin: bottom; }
+.bar-top-val { position: absolute; top: -16px; left: 50%; transform: translateX(-50%); font-size: 9px; color: #666; white-space: nowrap; opacity: 0; transition: opacity 0.2s; pointer-events: none; }
+.bar-group:hover .bar-top-val { opacity: 1; }
+.bar-x-label { font-size: 11px; color: #555; margin-top: 6px; white-space: nowrap; text-align: center; font-weight: 500; }
 </style>
 </head>
 <body>
@@ -261,6 +279,9 @@ body { font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
         <button class="sub-tab-btn" onclick="switchSubTab(this,'overall-detail')">明细</button>
       </div>
       <div id="overall-cumul">
+        <div class="section-title">分公司元效对比</div>
+        <div id="effChartCumul" class="chart-container"></div>
+        <div class="section-title" style="margin-top:8px">分公司详情</div>
         <div class="table-wrap">
         <table class="data-table">
           <thead>
@@ -282,6 +303,9 @@ body { font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
         </div>
       </div>
       <div id="overall-detail" style="display:none">
+        <div class="section-title">分公司元效对比</div>
+        <div id="effChartDetail" class="chart-container"></div>
+        <div class="section-title" style="margin-top:8px">分公司详情</div>
         <div class="table-wrap" id="overall-detail-wrap"></div>
       </div>
     </div>
@@ -293,6 +317,9 @@ body { font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
         <button class="sub-tab-btn" onclick="switchSubTab(this,'store-detail')">明细</button>
       </div>
       <div id="store-cumul">
+        <div class="section-title">分公司元效对比</div>
+        <div id="effChartStoreCumul" class="chart-container"></div>
+        <div class="section-title" style="margin-top:8px">分公司详情</div>
         <div class="table-wrap">
         <table class="data-table">
           <thead>
@@ -314,6 +341,9 @@ body { font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
         </div>
       </div>
       <div id="store-detail" style="display:none">
+        <div class="section-title">分公司元效对比</div>
+        <div id="effChartStoreDetail" class="chart-container"></div>
+        <div class="section-title" style="margin-top:8px">分公司详情</div>
         <div class="table-wrap" id="store-detail-wrap"></div>
       </div>
     </div>
@@ -436,6 +466,56 @@ function computeRanks(items, key, desc=true){
   return rankMap;
 }
 
+// ===== 渲染: 分公司元效对比柱形图 =====
+function renderCostEffChart(containerId, filteredRows, allRows) {
+  const sorted = [...filteredRows].filter(r => r.costEff > 0).sort((a, b) => b.costEff - a.costEff);
+  const all = [...allRows].filter(r => r.costEff > 0).sort((a, b) => b.costEff - a.costEff);
+  if (sorted.length === 0) { document.getElementById(containerId).innerHTML = '<div style="text-align:center;color:#999;padding:30px">暂无数据</div>'; return; }
+  const natlAvg = all.length > 0 ? all.reduce((s, r) => s + r.costEff, 0) / all.length : 0;
+  const grpAvg = natlAvg;
+  let maxVal = Math.max(...sorted.map(r => r.costEff), natlAvg) * 1.18;
+  let html = '<div class="chart-legend">';
+  html += '<span class="legend-item"><span class="legend-color" style="background:#4facfe"></span>分公司元效</span>';
+  html += '<span class="legend-item"><span class="legend-color" style="background:#43e97b"></span>全国平均元效</span>';
+  html += '<span class="legend-item"><span class="legend-color" style="background:#fa709a"></span>同组平均元效</span>';
+  html += '<span class="legend-item"><span class="legend-color" style="background:#a18cd1"></span>同组内更高元效均值</span>';
+  html += '</div>';
+  html += '<div class="bar-chart-area">';
+  sorted.forEach((r, i) => {
+    const allIdx = all.findIndex(x => x._id === r._id);
+    const higherInAll = allIdx > 0 ? all.slice(0, allIdx) : [];
+    const higherAvg = higherInAll.length > 0 ? higherInAll.reduce((s, x) => s + x.costEff, 0) / higherInAll.length : 0;
+    const pct1 = (r.costEff / maxVal * 100).toFixed(1);
+    const pct2 = (natlAvg / maxVal * 100).toFixed(1);
+    const pct3 = (grpAvg / maxVal * 100).toFixed(1);
+    const pct4 = higherAvg > 0 ? (higherAvg / maxVal * 100).toFixed(1) : '0';
+    const shortName = r.branch.replace('分公司', '');
+    html += '<div class="bar-group"><div class="bars-wrap">';
+    html += '<div class="bar-item" style="height:'+pct1+'%;background:#4facfe" title="分公司元效: '+r.costEff.toFixed(2)+'"><span class="bar-top-val">'+r.costEff.toFixed(2)+'</span></div>';
+    html += '<div class="bar-item" style="height:'+pct2+'%;background:#43e97b" title="全国平均: '+natlAvg.toFixed(2)+'"><span class="bar-top-val">'+natlAvg.toFixed(2)+'</span></div>';
+    html += '<div class="bar-item" style="height:'+pct3+'%;background:#fa709a" title="同组平均: '+grpAvg.toFixed(2)+'"><span class="bar-top-val">'+grpAvg.toFixed(2)+'</span></div>';
+    if (higherAvg > 0) {
+      html += '<div class="bar-item" style="height:'+pct4+'%;background:#a18cd1" title="同组内更高元效均值: '+higherAvg.toFixed(2)+'"><span class="bar-top-val">'+higherAvg.toFixed(2)+'</span></div>';
+    } else {
+      // 排名第一：无更优分公司，显示自身值
+      html += '<div class="bar-item" style="height:'+pct1+'%;background:#a18cd1;opacity:0.5" title="当前排名最高（显示自身值）"><span class="bar-top-val">'+r.costEff.toFixed(2)+'</span></div>';
+    }
+    html += '</div><div class="bar-x-label">'+shortName+'</div></div>';
+  });
+  html += '</div>';
+  document.getElementById(containerId).innerHTML = html;
+}
+
+function computeAllBranchCostEff(channelFilter) {
+  const mIdxs = getSelectedMonths().map((_, i) => i);
+  return branches.map(b => {
+    const r = { _id: b, branch: b, actualGMV: 0, actualCost: 0, costEff: 0 };
+    channelFilter.forEach(ch => { const a = aggregate(b, ch, mIdxs); r.actualGMV += a.actualGMV; r.actualCost += a.actualCost; });
+    r.costEff = r.actualCost > 0 ? r.actualGMV / r.actualCost : 0;
+    return r;
+  });
+}
+
 // ===== 渲染: 整体累计 =====
 function renderOverall(){
   const fBranches = getFilteredBranches();
@@ -515,6 +595,10 @@ function renderOverall(){
   let html = rowHtml(total, true);
   rows.forEach(d => { html += rowHtml(d, false); });
   document.getElementById('tbody-overall').innerHTML = html;
+
+  // Render cost efficiency chart
+  const allBranchRows = computeAllBranchCostEff(fChannels);
+  renderCostEffChart('effChartCumul', rows, allBranchRows);
 }
 
 // ===== 渲染: 整体明细（月份分组表头） =====
@@ -669,6 +753,16 @@ function renderOverallDetail(){
 
   document.getElementById('overall-detail-wrap').innerHTML =
     `<table class="data-table"><thead>${head1}${head2}</thead><tbody>${bodyHtml}</tbody></table>`;
+
+  // Render cost efficiency chart for detail tab
+  const detailChartRows = fBranches.map(b => {
+    const r = { _id: b, branch: b, actualGMV: 0, actualCost: 0, costEff: 0 };
+    fChannels.forEach(ch => { mIdxs.forEach(mi => { const d = raw[b][ch][mi]; r.actualGMV += d.actualGMV; r.actualCost += d.actualCost; }); });
+    r.costEff = r.actualCost > 0 ? r.actualGMV / r.actualCost : 0;
+    return r;
+  });
+  const detailAllRows = computeAllBranchCostEff(fChannels);
+  renderCostEffChart('effChartDetail', detailChartRows, detailAllRows);
 }
 
 // ===== 渲染: 店体系累计 =====
@@ -791,6 +885,16 @@ function renderStore(){
     });
   });
   document.getElementById('tbody-store').innerHTML = html;
+
+  // Render store cost efficiency chart (branch-level)
+  const storeBranchRows = fBranches.map(b => {
+    const r = { _id: b, branch: b, actualGMV: 0, actualCost: 0, costEff: 0 };
+    fChannels.forEach(ch => { const a = aggregate(b, ch, mIdxs); r.actualGMV += a.actualGMV; r.actualCost += a.actualCost; });
+    r.costEff = r.actualCost > 0 ? r.actualGMV / r.actualCost : 0;
+    return r;
+  });
+  const storeAllBranchRows = computeAllBranchCostEff(fChannels);
+  renderCostEffChart('effChartStoreCumul', storeBranchRows, storeAllBranchRows);
 }
 
 // ===== 渲染: 店体系明细 =====
@@ -1041,6 +1145,17 @@ function renderStoreDetail(){
 
   document.getElementById('store-detail-wrap').innerHTML =
     `<table class="data-table"><thead>${head1}${head2}</thead><tbody>${bodyHtml}</tbody></table>`;
+
+  // Render store detail cost efficiency chart
+  const sdMIdxs = selMonths.map((_,i) => i);
+  const storeDetailChartRows = fBranches.map(b => {
+    const r = { _id: b, branch: b, actualGMV: 0, actualCost: 0, costEff: 0 };
+    fChannels.forEach(ch => { sdMIdxs.forEach(mi => { const d = raw[b][ch][mi]; r.actualGMV += d.actualGMV; r.actualCost += d.actualCost; }); });
+    r.costEff = r.actualCost > 0 ? r.actualGMV / r.actualCost : 0;
+    return r;
+  });
+  const storeDetailAllRows = computeAllBranchCostEff(fChannels);
+  renderCostEffChart('effChartStoreDetail', storeDetailChartRows, storeDetailAllRows);
 }
 
 // ===== KPI 更新 =====
@@ -1111,6 +1226,9 @@ function switchSubTab(btn, id){
   const panel = btn.closest('.tab-panel');
   panel.querySelectorAll('[id$="-cumul"], [id$="-detail"]').forEach(el => el.style.display='none');
   document.getElementById(id).style.display='block';
+  // 切换到明细tab时重新渲染图表
+  if (id === 'overall-detail') { renderOverallDetail(); }
+  if (id === 'store-detail') { renderStoreDetail(); }
 }
 
 function toggleExpand(id, btn){
