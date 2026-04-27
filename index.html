@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>组织档案 · 招聘模块</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+:root {
+  --blue: #3370FF; --blue-bg: #EBF1FF; --red: #F54A45; --red-bg: #FEECEE;
+  --orange: #FF7D00; --orange-bg: #FFF7E8; --green: #00B42A; --green-bg: #E8FFEA;
+  --gray-1: #1F2329; --gray-2: #646A73; --gray-3: #8F959E; --gray-4: #BBBFC4;
+  --gray-5: #DEE0E3; --gray-6: #F0F1F4; --gray-bg: #F7F8FA;
+  --radius: 8px; --shadow: 0 1px 4px rgba(0,0,0,0.08);
+}
+body { font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", "PingFang SC", sans-serif; background: var(--gray-bg); color: var(--gray-1); line-height: 1.5; }
+.header { background: #fff; border-bottom: 1px solid var(--gray-5); padding: 12px 24px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
+.header h1 { font-size: 16px; font-weight: 600; }
+.header .back-btn { display: none; align-items: center; gap: 6px; color: var(--blue); cursor: pointer; font-size: 14px; border: none; background: none; }
+.header .back-btn:hover { opacity: 0.7; }
+.container { max-width: 1280px; margin: 0 auto; padding: 16px 24px; }
+.filters { background: #fff; border-radius: var(--radius); padding: 12px 16px; display: flex; gap: 12px; align-items: center; margin-bottom: 16px; box-shadow: var(--shadow); flex-wrap: wrap; }
+.filter-item { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--gray-2); }
+.filter-item select, .filter-item input { border: 1px solid var(--gray-5); border-radius: 6px; padding: 6px 10px; font-size: 13px; background: #fff; color: var(--gray-1); outline: none; min-width: 120px; }
+.filter-item select:focus, .filter-item input:focus { border-color: var(--blue); }
+.section { background: #fff; border-radius: var(--radius); padding: 16px; margin-bottom: 16px; box-shadow: var(--shadow); }
+.section-title { font-size: 15px; font-weight: 600; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+.kpi-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 16px; }
+.kpi-card { background: #fff; border-radius: var(--radius); padding: 16px; box-shadow: var(--shadow); border-left: 3px solid var(--blue); }
+.kpi-card .label { font-size: 12px; color: var(--gray-3); margin-bottom: 4px; }
+.kpi-card .value { font-size: 28px; font-weight: 700; color: var(--gray-1); }
+.kpi-card .value.red { color: var(--red); }
+.kpi-card .sub { font-size: 12px; color: var(--gray-3); margin-top: 4px; display: flex; align-items: center; gap: 4px; }
+.kpi-card .sub .tag { padding: 1px 6px; border-radius: 4px; font-size: 11px; }
+.kpi-card .sub .tag.up { background: var(--green-bg); color: var(--green); }
+.kpi-card .sub .tag.down { background: var(--red-bg); color: var(--red); }
+.progress-bar-wrap { margin-bottom: 16px; }
+.progress-label { display: flex; justify-content: space-between; font-size: 12px; color: var(--gray-3); margin-bottom: 6px; }
+.progress-track { height: 8px; background: var(--gray-6); border-radius: 4px; overflow: hidden; position: relative; }
+.progress-fill { height: 100%; border-radius: 4px; transition: width 0.6s ease; }
+.progress-fill.normal { background: var(--blue); }
+.progress-fill.over { background: var(--red); }
+.tabs { display: flex; gap: 0; border-bottom: 1px solid var(--gray-5); margin-bottom: 12px; }
+.tab { padding: 8px 16px; font-size: 13px; color: var(--gray-3); cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.2s; }
+.tab:hover { color: var(--gray-1); }
+.tab.active { color: var(--blue); border-bottom-color: var(--blue); font-weight: 500; }
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th { background: var(--gray-bg); padding: 8px 12px; text-align: left; font-weight: 500; color: var(--gray-2); border-bottom: 1px solid var(--gray-5); white-space: nowrap; cursor: pointer; user-select: none; position: relative; }
+th:hover { background: var(--gray-6); }
+th .sort-icon { font-size: 10px; margin-left: 2px; color: var(--gray-4); }
+th .sort-icon.active { color: var(--blue); }
+td { padding: 8px 12px; border-bottom: 1px solid var(--gray-6); }
+tr:hover { background: #FAFBFC; }
+.status-tag { padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: 500; }
+.status-tag.over { background: var(--red-bg); color: var(--red); }
+.status-tag.slow { background: var(--orange-bg); color: var(--orange); }
+.status-tag.normal { background: var(--green-bg); color: var(--green); }
+.clickable { color: var(--blue); cursor: pointer; }
+.clickable:hover { text-decoration: underline; }
+.empty-state { text-align: center; padding: 40px; color: var(--gray-3); }
+.empty-state .icon { font-size: 48px; margin-bottom: 12px; }
+.empty-state .text { font-size: 14px; }
+
+/* Funnel */
+.funnel { display: flex; flex-direction: column; gap: 2px; align-items: center; padding: 16px 0; }
+.funnel-step { display: flex; align-items: center; justify-content: center; height: 44px; border-radius: 6px; color: #fff; font-size: 13px; font-weight: 500; position: relative; transition: all 0.3s; cursor: default; }
+.funnel-step:hover { filter: brightness(1.1); }
+.funnel-step .label { position: absolute; right: calc(100% + 12px); white-space: nowrap; font-size: 12px; color: var(--gray-2); }
+.funnel-step .count { margin-right: 8px; }
+.funnel-arrow { width: 24px; height: 16px; display: flex; align-items: center; justify-content: center; color: var(--gray-4); font-size: 10px; }
+.funnel-stats { display: flex; gap: 24px; justify-content: center; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--gray-6); }
+.funnel-stat { text-align: center; }
+.funnel-stat .stat-label { font-size: 12px; color: var(--gray-3); }
+.funnel-stat .stat-value { font-size: 20px; font-weight: 700; color: var(--blue); }
+.funnel-stat .stat-sub { font-size: 11px; color: var(--gray-3); }
+
+/* Analysis card */
+.analysis-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+.analysis-card { padding: 12px; border-radius: 6px; border: 1px solid var(--gray-5); }
+.analysis-card.low { border-left: 3px solid var(--red); }
+.analysis-card.high { border-left: 3px solid var(--green); }
+.analysis-card .title { font-size: 12px; font-weight: 600; margin-bottom: 4px; }
+.analysis-card .title.low { color: var(--red); }
+.analysis-card .title.high { color: var(--green); }
+.analysis-card .detail { font-size: 13px; color: var(--gray-1); line-height: 1.6; }
+
+/* Sub pages */
+.sub-page { display: none; }
+.sub-page.active { display: block; }
+.page-enter { display: block !important; animation: fadeIn 0.25s ease; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+/* Card tabs for 在途 */
+.card-tabs { display: flex; gap: 8px; margin-bottom: 12px; }
+.card-tab { flex: 1; padding: 12px; border-radius: var(--radius); border: 1px solid var(--gray-5); text-align: center; cursor: pointer; transition: all 0.2s; }
+.card-tab:hover { border-color: var(--blue); }
+.card-tab.active { border-color: var(--blue); background: var(--blue-bg); }
+.card-tab .tab-num { font-size: 24px; font-weight: 700; }
+.card-tab .tab-label { font-size: 12px; color: var(--gray-3); margin-top: 2px; }
+
+/* Summary text */
+.summary-text { font-size: 13px; color: var(--gray-2); margin-bottom: 12px; padding: 8px 12px; background: var(--gray-bg); border-radius: 6px; }
+
+/* Sort indicator */
+th.sorted-asc .sort-icon::after { content: '↑'; }
+th.sorted-desc .sort-icon::after { content: '↓'; }
+
+/* Responsive */
+@media (max-width: 768px) {
+  .container { padding: 8px 12px; }
+  .kpi-cards { grid-template-columns: 1fr; }
+  .analysis-cards { grid-template-columns: 1fr; }
+  .filters { flex-direction: column; align-items: stretch; }
+  .filter-item { width: 100%; }
+  .filter-item select { width: 100%; }
+}
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+  <button class="back-btn" id="backBtn" onclick="goBack()">
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 3L5 8L10 13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    返回
+  </button>
+  <h1 id="pageTitle">组织档案 · 招聘模块</h1>
+  <div style="width:60px"></div>
+</div>
+
+<div class="container">
+
+<!-- ==================== 一级页 ==================== -->
+<div id="pageMain" class="page-enter">
+
+<!-- 筛选器 -->
+<div class="filters">
+  <div class="filter-item">
+    <span>部门</span>
+    <select id="filterDept" onchange="applyFilters()">
+      <option value="all">集团（全部）</option>
+      <option value="tech">技术中心</option>
+      <option value="product">产品部</option>
+      <option value="marketing">市场部</option>
+      <option value="hr">人力资源部</option>
+    </select>
+  </div>
+  <div class="filter-item">
+    <span>职级</span>
+    <select id="filterLevel" onchange="applyFilters()">
+      <option value="all">全部</option>
+      <option value="12">12级以下</option>
+      <option value="13">13级</option>
+      <option value="14">14级</option>
+      <option value="15">15级</option>
+      <option value="16">16级</option>
+      <option value="17">17级</option>
+      <option value="18">18级</option>
+      <option value="19">19级</option>
+      <option value="20">20级+</option>
+    </select>
+  </div>
+</div>
+
+<!-- KPI 卡片 -->
+<div class="kpi-cards">
+  <div class="kpi-card">
+    <div class="label">待招人数</div>
+    <div class="value" id="kpiWaiting">86</div>
+    <div class="sub">其中高招 <strong>12</strong></div>
+  </div>
+  <div class="kpi-card">
+    <div class="label">在途人数</div>
+    <div class="value" id="kpiInProcess">43</div>
+    <div class="sub">其中高招 <strong>5</strong></div>
+  </div>
+  <div class="kpi-card">
+    <div class="label">预算满编率</div>
+    <div class="value" id="kpiRate">87.6%</div>
+    <div class="sub">较上级 <span class="tag down">▼ 2.3%</span></div>
+  </div>
+</div>
+
+<!-- HC满编率进度条 -->
+<div class="section">
+  <div class="progress-bar-wrap">
+    <div class="progress-label">
+      <span>HC 满编率</span>
+      <span id="progressText">87.6%</span>
+    </div>
+    <div class="progress-track">
+      <div class="progress-fill normal" id="progressFill" style="width:87.6%"></div>
+    </div>
+  </div>
+</div>
+
+<!-- 招聘概览 -->
+<div class="section">
+  <div class="section-title">📊 招聘概览</div>
+  <div class="tabs" id="overviewTabs">
+    <div class="tab active" onclick="switchOverviewTab('dept')">按部门</div>
+    <div class="tab" onclick="switchOverviewTab('seq')">按序列</div>
+  </div>
+  <div class="table-wrap">
+    <table id="overviewTable">
+      <thead>
+        <tr>
+          <th onclick="sortTable('overview', 0)">部门/序列 <span class="sort-icon"></span></th>
+          <th onclick="sortTable('overview', 1)">招聘进展 <span class="sort-icon"></span></th>
+          <th onclick="sortTable('overview', 2)">待招人数 <span class="sort-icon"></span></th>
+          <th onclick="sortTable('overview', 3)">简历筛选中 <span class="sort-icon"></span></th>
+          <th onclick="sortTable('overview', 4)">面试中 <span class="sort-icon"></span></th>
+          <th onclick="sortTable('overview', 5)">offer审批中 <span class="sort-icon"></span></th>
+          <th onclick="sortTable('overview', 6)">offer确认中 <span class="sort-icon"></span></th>
+        </tr>
+      </thead>
+      <tbody id="overviewBody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- 招聘转化 -->
+<div class="section">
+  <div class="section-title">🔄 招聘转化</div>
+
+  <!-- 数据分析 -->
+  <div class="analysis-cards">
+    <div class="analysis-card low">
+      <div class="title low">🔻 最低转化率</div>
+      <div class="detail" id="analysisLow">
+        面试通过→offer审批通过 转化率 <strong>38.5%</strong>，较上级 <strong>-12.3%</strong>，其中 <strong>市场部</strong> 最低（28.1%）
+      </div>
+    </div>
+    <div class="analysis-card high">
+      <div class="title high">🔺 最高转化率</div>
+      <div class="detail" id="analysisHigh">
+        offer接受→入职 转化率 <strong>92.1%</strong>，较上级 <strong>+5.8%</strong>，其中 <strong>技术中心</strong> 最高（96.3%）
+      </div>
+    </div>
+  </div>
+
+  <!-- 面试漏斗 -->
+  <div style="display:flex; gap:24px; align-items:flex-start;">
+    <div style="flex:1;">
+      <div class="funnel" id="funnel">
+        <div class="funnel-step" style="width:320px; background:#3370FF;">
+          <span class="count">1,284</span> 简历筛选通过
+        </div>
+        <div class="funnel-arrow">▼</div>
+        <div class="funnel-step" style="width:280px; background:#5B8FF9;">
+          <span class="count">876</span> 一面通过
+        </div>
+        <div class="funnel-arrow">▼</div>
+        <div class="funnel-step" style="width:220px; background:#7EAAFB;">
+          <span class="count">612</span> 面试通过
+        </div>
+        <div class="funnel-arrow">▼</div>
+        <div class="funnel-step" style="width:170px; background:#A4C2FC;">
+          <span class="count">423</span> offer审批通过
+        </div>
+        <div class="funnel-arrow">▼</div>
+        <div class="funnel-step" style="width:140px; background:#C8D9FE;">
+          <span class="count">358</span> offer接受
+        </div>
+        <div class="funnel-arrow">▼</div>
+        <div class="funnel-step" style="width:120px; background:#EBF1FF; color: var(--blue);">
+          <span class="count">330</span> 入职
+        </div>
+      </div>
+    </div>
+    <div style="min-width:240px;">
+      <div class="funnel-stats" style="flex-direction:column; gap:16px; border:none; padding:0;">
+        <div class="funnel-stat">
+          <div class="stat-label">一面 → offer 转化率</div>
+          <div class="stat-value">48.3%</div>
+          <div class="stat-sub">较上级 <span style="color:var(--red)">-4.2%</span></div>
+        </div>
+        <div class="funnel-stat">
+          <div class="stat-label">offer → 入职 转化率</div>
+          <div class="stat-value">92.1%</div>
+          <div class="stat-sub">较上级 <span style="color:var(--green)">+5.8%</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div><!-- pageMain -->
+
+<!-- ==================== 二级页-待招详情 ==================== -->
+<div id="pageWaiting" class="sub-page">
+  <div class="filters">
+    <div class="filter-item">
+      <span>部门</span>
+      <select id="subDeptFilter" onchange="renderWaitingTable()">
+        <option value="all">全部</option>
+        <option value="tech">技术中心</option>
+        <option value="product">产品部</option>
+        <option value="marketing">市场部</option>
+      </select>
+    </div>
+    <div class="filter-item">
+      <span>序列</span>
+      <select id="subSeqFilter" onchange="renderWaitingTable()">
+        <option value="all">全部</option>
+        <option value="eng">研发</option>
+        <option value="prod">产品</option>
+        <option value="design">设计</option>
+        <option value="ops">运营</option>
+      </select>
+    </div>
+    <div class="filter-item">
+      <span>职级</span>
+      <select id="subLevelFilter" onchange="renderWaitingTable()">
+        <option value="all">全部</option>
+        <option value="12">12级以下</option>
+        <option value="13">13级</option>
+        <option value="14">14级</option>
+        <option value="15">15级</option>
+        <option value="16">16级</option>
+        <option value="17">17级</option>
+        <option value="18">18级</option>
+        <option value="19">19级</option>
+        <option value="20">20级+</option>
+      </select>
+    </div>
+  </div>
+  <div class="summary-text" id="waitingSummary">预算待招人数 <strong>86</strong> 人，已提招需待招人数 <strong>64</strong> 人</div>
+  <div class="section">
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>招需职位</th>
+            <th onclick="sortTable('waiting', 1)">职级 <span class="sort-icon"></span></th>
+            <th>序列</th>
+            <th onclick="sortTable('waiting', 3)">招需人数 <span class="sort-icon"></span></th>
+            <th onclick="sortTable('waiting', 4)">招需待招 <span class="sort-icon"></span></th>
+            <th onclick="sortTable('waiting', 5)">简历筛选中 <span class="sort-icon"></span></th>
+            <th onclick="sortTable('waiting', 6)">面试中 <span class="sort-icon"></span></th>
+            <th onclick="sortTable('waiting', 7)">offer审批中 <span class="sort-icon"></span></th>
+            <th onclick="sortTable('waiting', 8)">offer确认中 <span class="sort-icon"></span></th>
+            <th onclick="sortTable('waiting', 9)">招聘耗时(天) <span class="sort-icon"></span></th>
+            <th>部门</th>
+          </tr>
+        </thead>
+        <tbody id="waitingBody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== 二级页-在途详情 ==================== -->
+<div id="pageInProcess" class="sub-page">
+  <div class="filters">
+    <div class="filter-item">
+      <span>部门</span>
+      <select onchange="renderInProcessTable()">
+        <option value="all">全部</option>
+        <option value="tech">技术中心</option>
+        <option value="product">产品部</option>
+        <option value="marketing">市场部</option>
+      </select>
+    </div>
+    <div class="filter-item">
+      <span>序列</span>
+      <select onchange="renderInProcessTable()">
+        <option value="all">全部</option>
+        <option value="eng">研发</option>
+        <option value="prod">产品</option>
+      </select>
+    </div>
+    <div class="filter-item">
+      <span>职级</span>
+      <select onchange="renderInProcessTable()">
+        <option value="all">全部</option>
+        <option value="16">16级</option>
+        <option value="17">17级</option>
+        <option value="18">18级</option>
+        <option value="19">19级</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="card-tabs" id="inProcessTabs">
+    <div class="card-tab active" onclick="switchInProcessTab('prejoin')">
+      <div class="tab-num" id="tabPreJoin">28</div>
+      <div class="tab-label">预入职</div>
+    </div>
+    <div class="card-tab" onclick="switchInProcessTab('transferin')">
+      <div class="tab-num" id="tabTransferIn">8</div>
+      <div class="tab-label">预转入</div>
+    </div>
+    <div class="card-tab" onclick="switchInProcessTab('transferout')">
+      <div class="tab-num" id="tabTransferOut">3</div>
+      <div class="tab-label">预转出</div>
+    </div>
+    <div class="card-tab" onclick="switchInProcessTab('preleave')">
+      <div class="tab-num" id="tabPreLeave">4</div>
+      <div class="tab-label">预离职</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="table-wrap">
+      <table>
+        <thead id="inProcessHead"></thead>
+        <tbody id="inProcessBody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+</div><!-- container -->
+
+<script>
+// ============ DATA ============
+const overviewData = {
+  dept: [
+    { name: '技术中心', status: 'slow', waiting: 32, screening: 45, interviewing: 28, offerApproval: 8, offerConfirm: 5 },
+    { name: '产品部', status: 'normal', waiting: 18, screening: 22, interviewing: 15, offerApproval: 4, offerConfirm: 3 },
+    { name: '市场部', status: 'over', waiting: -5, screening: 12, interviewing: 8, offerApproval: 2, offerConfirm: 1 },
+    { name: '人力资源部', status: 'normal', waiting: 8, screening: 10, interviewing: 6, offerApproval: 2, offerConfirm: 2 },
+    { name: '财务部', status: 'normal', waiting: 6, screening: 8, interviewing: 4, offerApproval: 1, offerConfirm: 1 },
+    { name: '销售部', status: 'slow', waiting: 22, screening: 30, interviewing: 18, offerApproval: 5, offerConfirm: 3 },
+    { name: '法务部', status: 'normal', waiting: 3, screening: 5, interviewing: 3, offerApproval: 1, offerConfirm: 0 },
+    { name: '战略部', status: 'normal', waiting: 2, screening: 3, interviewing: 2, offerApproval: 1, offerConfirm: 1 },
+  ],
+  seq: [
+    { name: '研发', status: 'slow', waiting: 28, screening: 40, interviewing: 25, offerApproval: 7, offerConfirm: 4 },
+    { name: '产品', status: 'normal', waiting: 12, screening: 18, interviewing: 12, offerApproval: 3, offerConfirm: 2 },
+    { name: '设计', status: 'normal', waiting: 8, screening: 12, interviewing: 7, offerApproval: 2, offerConfirm: 2 },
+    { name: '运营', status: 'over', waiting: -3, screening: 10, interviewing: 6, offerApproval: 1, offerConfirm: 1 },
+    { name: '市场', status: 'slow', waiting: 15, screening: 20, interviewing: 12, offerApproval: 3, offerConfirm: 2 },
+    { name: '职能', status: 'normal', waiting: 5, screening: 8, interviewing: 5, offerApproval: 2, offerConfirm: 1 },
+  ]
+};
+
+const waitingData = [
+  { pos: '高级前端工程师', level: 17, seq: '研发', total: 5, waiting: 3, screening: 8, interviewing: 5, offerA: 1, offerC: 0, days: 45, dept: '技术中心' },
+  { pos: '产品经理', level: 16, seq: '产品', total: 3, waiting: 2, screening: 5, interviewing: 3, offerA: 1, offerC: 0, days: 32, dept: '产品部' },
+  { pos: '后端架构师', level: 19, seq: '研发', total: 2, waiting: 2, screening: 3, interviewing: 2, offerA: 0, offerC: 0, days: 68, dept: '技术中心' },
+  { pos: '数据分析师', level: 15, seq: '研发', total: 4, waiting: 2, screening: 6, interviewing: 4, offerA: 1, offerC: 1, days: 28, dept: '技术中心' },
+  { pos: 'UI设计师', level: 14, seq: '设计', total: 2, waiting: 1, screening: 3, interviewing: 2, offerA: 0, offerC: 0, days: 21, dept: '产品部' },
+  { pos: '市场运营', level: 15, seq: '运营', total: 3, waiting: 2, screening: 4, interviewing: 3, offerA: 0, offerC: 0, days: 35, dept: '市场部' },
+  { pos: 'HRBP', level: 16, seq: '职能', total: 2, waiting: 1, screening: 2, interviewing: 1, offerA: 1, offerC: 1, days: 15, dept: '人力资源部' },
+  { pos: '销售经理', level: 17, seq: '市场', total: 4, waiting: 3, screening: 5, interviewing: 3, offerA: 1, offerC: 0, days: 42, dept: '销售部' },
+  { pos: '高级测试工程师', level: 16, seq: '研发', total: 3, waiting: 2, screening: 4, interviewing: 3, offerA: 0, offerC: 0, days: 38, dept: '技术中心' },
+  { pos: '法务顾问', level: 18, seq: '职能', total: 1, waiting: 1, screening: 2, interviewing: 1, offerA: 0, offerC: 0, days: 55, dept: '法务部' },
+];
+
+const inProcessData = {
+  prejoin: {
+    head: ['姓名', '职级', '预入职日期', '高薪offer', '序列', '部门'],
+    rows: [
+      ['张三', '17', '2026-05-06', '否', '研发', '技术中心'],
+      ['李四', '16', '2026-05-12', '否', '产品', '产品部'],
+      ['王五', '19', '2026-05-20', '是', '研发', '技术中心'],
+      ['赵六', '15', '2026-05-08', '否', '设计', '产品部'],
+      ['钱七', '18', '2026-06-01', '是', '研发', '技术中心'],
+      ['孙八', '14', '2026-05-15', '否', '运营', '市场部'],
+      ['周九', '17', '2026-05-22', '否', '市场', '销售部'],
+      ['吴十', '16', '2026-05-10', '否', '职能', '人力资源部'],
+    ]
+  },
+  transferin: {
+    head: ['姓名', '职级', '预转入日期', '调转原因', '序列', '部门'],
+    rows: [
+      ['郑一', '16', '2026-05-05', '活水', '研发', '技术中心'],
+      ['冯二', '15', '2026-05-18', '活水', '产品', '产品部'],
+      ['陈三', '17', '2026-05-25', '非活水', '研发', '技术中心'],
+      ['褚四', '14', '2026-06-02', '活水', '运营', '市场部'],
+    ]
+  },
+  transferout: {
+    head: ['姓名', '职级', '预转出日期', '调转原因', '序列', '部门'],
+    rows: [
+      ['卫五', '16', '2026-05-08', '活水', '研发', '产品部'],
+      ['蒋六', '15', '2026-05-20', '非活水', '运营', '销售部'],
+      ['沈七', '18', '2026-06-01', '活水', '研发', '技术中心'],
+    ]
+  },
+  preleave: {
+    head: ['姓名', '职级', '预离职日期', '高薪offer', '序列', '部门'],
+    rows: [
+      ['韩八', '17', '2026-05-30', '否', '研发', '技术中心'],
+      ['杨九', '14', '2026-05-15', '否', '运营', '市场部'],
+      ['秦十', '16', '2026-06-10', '否', '产品', '产品部'],
+      ['尤十一', '15', '2026-05-25', '否', '设计', '产品部'],
+    ]
+  }
+};
+
+// ============ STATE ============
+let currentPage = 'main';
+let overviewMode = 'dept';
+let currentInProcessTab = 'prejoin';
+
+// ============ RENDER ============
+function renderOverviewTable() {
+  const data = overviewData[overviewMode];
+  const tbody = document.getElementById('overviewBody');
+  tbody.innerHTML = data.map(r => `
+    <tr>
+      <td>${r.name}</td>
+      <td><span class="status-tag ${r.status}">${r.status === 'over' ? '超编' : r.status === 'slow' ? '缓慢' : '正常'}</span></td>
+      <td><span class="clickable" onclick="navigateTo('waiting', '${r.name}')">${r.waiting < 0 ? '<span style="color:var(--red)">' + r.waiting + '</span>' : r.waiting}</span></td>
+      <td>${r.screening}</td>
+      <td>${r.interviewing}</td>
+      <td>${r.offerApproval}</td>
+      <td>${r.offerConfirm}</td>
+    </tr>
+  `).join('');
+}
+
+function renderWaitingTable() {
+  const tbody = document.getElementById('waitingBody');
+  tbody.innerHTML = waitingData.map(r => `
+    <tr>
+      <td>${r.pos}</td>
+      <td>${r.level}</td>
+      <td>${r.seq}</td>
+      <td>${r.total}</td>
+      <td>${r.waiting}</td>
+      <td>${r.screening}</td>
+      <td>${r.interviewing}</td>
+      <td>${r.offerA}</td>
+      <td>${r.offerC}</td>
+      <td>${r.days}</td>
+      <td>${r.dept}</td>
+    </tr>
+  `).join('');
+}
+
+function renderInProcessTable() {
+  const data = inProcessData[currentInProcessTab];
+  const head = document.getElementById('inProcessHead');
+  const body = document.getElementById('inProcessBody');
+  head.innerHTML = '<tr>' + data.head.map(h => `<th>${h}</th>`).join('') + '</tr>';
+  body.innerHTML = data.rows.map(r => `
+    <tr>
+      ${r.map((cell, i) => {
+        if (i === 0 && currentInProcessTab !== 'prejoin') return `<td><span class="clickable">${cell}</span></td>`;
+        if (cell === '是') return `<td><span style="color:var(--red);font-weight:500">是</span></td>`;
+        return `<td>${cell}</td>`;
+      }).join('')}
+    </tr>
+  `).join('');
+}
+
+// ============ NAVIGATION ============
+function navigateTo(page, dept) {
+  document.getElementById('pageMain').style.display = 'none';
+  document.getElementById('pageMain').classList.remove('page-enter');
+  document.getElementById('backBtn').style.display = 'flex';
+
+  if (page === 'waiting') {
+    document.getElementById('pageWaiting').style.display = 'block';
+    document.getElementById('pageWaiting').classList.add('page-enter');
+    document.getElementById('pageTitle').textContent = '待招详情';
+    currentPage = 'waiting';
+    if (dept) {
+      const sel = document.getElementById('subDeptFilter');
+      for (let opt of sel.options) {
+        if (opt.text === dept || opt.value === dept) { sel.value = opt.value; break; }
+      }
+    }
+    renderWaitingTable();
+  } else if (page === 'inprocess') {
+    document.getElementById('pageInProcess').style.display = 'block';
+    document.getElementById('pageInProcess').classList.add('page-enter');
+    document.getElementById('pageTitle').textContent = '在途详情';
+    currentPage = 'inprocess';
+    renderInProcessTable();
+  }
+}
+
+function goBack() {
+  document.getElementById('pageWaiting').style.display = 'none';
+  document.getElementById('pageWaiting').classList.remove('page-enter');
+  document.getElementById('pageInProcess').style.display = 'none';
+  document.getElementById('pageInProcess').classList.remove('page-enter');
+  document.getElementById('pageMain').style.display = 'block';
+  document.getElementById('pageMain').classList.add('page-enter');
+  document.getElementById('backBtn').style.display = 'none';
+  document.getElementById('pageTitle').textContent = '组织档案 · 招聘模块';
+  currentPage = 'main';
+}
+
+// ============ TABS ============
+function switchOverviewTab(mode) {
+  overviewMode = mode;
+  document.querySelectorAll('#overviewTabs .tab').forEach(t => t.classList.remove('active'));
+  document.querySelector(`#overviewTabs .tab:${mode === 'dept' ? 'first' : 'last'}-child`).classList.add('active');
+  renderOverviewTable();
+}
+
+function switchInProcessTab(tab) {
+  currentInProcessTab = tab;
+  document.querySelectorAll('.card-tab').forEach(t => t.classList.remove('active'));
+  event.currentTarget.classList.add('active');
+  renderInProcessTable();
+}
+
+// ============ SORT ============
+function sortTable(table, col) {
+  // Simple toggle sort on table body rows
+  const tbody = table === 'overview' ? document.getElementById('overviewBody') : document.getElementById('waitingBody');
+  const rows = Array.from(tbody.querySelectorAll('tr'));
+  const th = tbody.closest('table').querySelectorAll('th')[col];
+  const isAsc = th.classList.contains('sorted-asc');
+
+  // Clear all sort classes
+  tbody.closest('table').querySelectorAll('th').forEach(h => h.classList.remove('sorted-asc', 'sorted-desc'));
+
+  rows.sort((a, b) => {
+    const aVal = a.cells[col].textContent.trim();
+    const bVal = b.cells[col].textContent.trim();
+    const aNum = parseFloat(aVal);
+    const bNum = parseFloat(bVal);
+    if (!isNaN(aNum) && !isNaN(bNum)) {
+      return isAsc ? bNum - aNum : aNum - bNum;
+    }
+    return isAsc ? bVal.localeCompare(aVal, 'zh') : aVal.localeCompare(bVal, 'zh');
+  });
+
+  th.classList.add(isAsc ? 'sorted-desc' : 'sorted-asc');
+  rows.forEach(r => tbody.appendChild(r));
+}
+
+// ============ FILTERS ============
+function applyFilters() {
+  const dept = document.getElementById('filterDept').value;
+  const level = document.getElementById('filterLevel').value;
+  // Simulate filter - update KPI values
+  const kpiMap = {
+    all: { waiting: 86, inprocess: 43, rate: '87.6%' },
+    tech: { waiting: 32, inprocess: 18, rate: '82.3%' },
+    product: { waiting: 18, inprocess: 12, rate: '91.2%' },
+    marketing: { waiting: -5, inprocess: 8, rate: '105.8%' },
+    hr: { waiting: 8, inprocess: 6, rate: '94.1%' },
+  };
+  const d = kpiMap[dept] || kpiMap.all;
+  document.getElementById('kpiWaiting').textContent = d.waiting;
+  document.getElementById('kpiWaiting').className = 'value' + (d.waiting < 0 ? ' red' : '');
+  document.getElementById('kpiInProcess').textContent = d.inprocess;
+  document.getElementById('kpiRate').textContent = d.rate;
+
+  const rateNum = parseFloat(d.rate);
+  document.getElementById('progressText').textContent = d.rate;
+  const fill = document.getElementById('progressFill');
+  fill.style.width = Math.min(rateNum, 100) + '%';
+  fill.className = 'progress-fill ' + (rateNum > 100 ? 'over' : 'normal');
+}
+
+// ============ INIT ============
+renderOverviewTable();
+</script>
+</body>
+</html>
