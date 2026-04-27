@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>组织档案 · 招聘模块 · 增强版</title>
+<!-- G2 v5 -->
+<script src="https://unpkg.com/@antv/g2@5/dist/g2.min.js"></script>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+:root {
+  --ink: #1a1a2e; --ink-2: #4a4a68; --ink-3: #8888a0; --ink-4: #b8b8cc;
+  --surface: #ffffff; --surface-2: #f8f7f4; --surface-3: #f0efe8;
+  --accent: #c04a1a; --accent-bg: #fef3ec;
+  --red: #c04a1a; --green: #2d6a4f; --green-bg: #ecf5f0;
+  --blue: #2563eb; --blue-bg: #eff6ff;
+  --radius: 6px; --shadow: 0 1px 3px rgba(26,26,46,0.06), 0 1px 2px rgba(26,26,46,0.04);
+  --font-display: 'Noto Serif SC', 'Source Han Serif SC', 'Songti SC', Georgia, serif;
+  --font-body: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', 'PingFang SC', sans-serif;
+  --font-mono: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+}
+@import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&display=swap');
+
+body { font-family: var(--font-body); background: var(--surface-2); color: var(--ink); line-height: 1.6; font-size: 14px; }
+
+/* Header — 安静、不抢戏 */
+.header { background: var(--surface); border-bottom: 1px solid var(--surface-3); padding: 14px 32px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
+.header h1 { font-family: var(--font-display); font-size: 17px; font-weight: 600; letter-spacing: 0.02em; color: var(--ink); }
+.header .subtitle { font-size: 12px; color: var(--ink-3); margin-left: 12px; font-weight: 400; }
+.header .back-btn { display: none; align-items: center; gap: 6px; color: var(--accent); cursor: pointer; font-size: 13px; border: none; background: none; font-family: var(--font-body); }
+.header .back-btn:hover { opacity: 0.7; }
+
+.container { max-width: 1200px; margin: 0 auto; padding: 20px 32px; }
+
+/* 筛选器 — 极简 */
+.filters { background: var(--surface); border-radius: var(--radius); padding: 10px 16px; display: flex; gap: 16px; align-items: center; margin-bottom: 20px; box-shadow: var(--shadow); }
+.filter-item { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--ink-3); }
+.filter-item label { font-weight: 500; color: var(--ink-2); min-width: 32px; }
+.filter-item select { border: 1px solid var(--surface-3); border-radius: 4px; padding: 5px 10px; font-size: 13px; background: var(--surface); color: var(--ink); outline: none; font-family: var(--font-body); cursor: pointer; }
+.filter-item select:focus { border-color: var(--accent); }
+
+/* KPI 卡片 — data-card 风格 */
+.kpi-section { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 20px; }
+.kpi-card { background: var(--surface); border-radius: var(--radius); padding: 20px 24px; box-shadow: var(--shadow); position: relative; overflow: hidden; }
+.kpi-card::before { content: ''; position: absolute; top: 0; left: 0; width: 3px; height: 100%; }
+.kpi-card:nth-child(1)::before { background: var(--ink); }
+.kpi-card:nth-child(2)::before { background: var(--blue); }
+.kpi-card:nth-child(3)::before { background: var(--green); }
+.kpi-card .kpi-label { font-size: 12px; color: var(--ink-3); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 8px; font-weight: 500; }
+.kpi-card .kpi-value { font-family: var(--font-display); font-size: 32px; font-weight: 700; line-height: 1; }
+.kpi-card .kpi-value.positive { color: var(--green); }
+.kpi-card .kpi-value.negative { color: var(--red); }
+.kpi-card .kpi-sub { font-size: 12px; color: var(--ink-3); margin-top: 8px; display: flex; align-items: center; gap: 6px; }
+.kpi-card .kpi-delta { font-size: 11px; padding: 1px 6px; border-radius: 3px; font-weight: 500; font-family: var(--font-mono); }
+.kpi-card .kpi-delta.up { background: var(--green-bg); color: var(--green); }
+.kpi-card .kpi-delta.down { background: var(--accent-bg); color: var(--red); }
+
+/* Section 容器 */
+.section { background: var(--surface); border-radius: var(--radius); padding: 20px 24px; margin-bottom: 20px; box-shadow: var(--shadow); }
+.section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+.section-title { font-family: var(--font-display); font-size: 15px; font-weight: 600; color: var(--ink); }
+
+/* Tabs */
+.tabs { display: flex; gap: 0; }
+.tab { padding: 6px 14px; font-size: 13px; color: var(--ink-3); cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.2s; font-family: var(--font-body); background: none; border-top: none; border-left: none; border-right: none; }
+.tab:hover { color: var(--ink); }
+.tab.active { color: var(--accent); border-bottom-color: var(--accent); font-weight: 500; }
+
+/* 进度条 */
+.progress-wrap { margin-bottom: 16px; }
+.progress-label { display: flex; justify-content: space-between; font-size: 12px; color: var(--ink-3); margin-bottom: 6px; }
+.progress-track { height: 6px; background: var(--surface-3); border-radius: 3px; overflow: hidden; }
+.progress-fill { height: 100%; border-radius: 3px; transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1); }
+.progress-fill.normal { background: var(--blue); }
+.progress-fill.over { background: var(--red); }
+
+/* 表格 — 克制、干净 */
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th { padding: 8px 12px; text-align: left; font-weight: 500; color: var(--ink-3); border-bottom: 1px solid var(--surface-3); white-space: nowrap; cursor: pointer; user-select: none; font-size: 12px; letter-spacing: 0.02em; }
+th:hover { color: var(--ink); }
+td { padding: 10px 12px; border-bottom: 1px solid var(--surface-3); }
+tr:last-child td { border-bottom: none; }
+tr:hover { background: var(--surface-2); }
+.status { padding: 2px 8px; border-radius: 3px; font-size: 11px; font-weight: 500; letter-spacing: 0.03em; }
+.status.over { background: var(--accent-bg); color: var(--red); }
+.status.slow { background: #fff7e8; color: #d46b08; }
+.status.normal { background: var(--green-bg); color: var(--green); }
+.clickable { color: var(--accent); cursor: pointer; border-bottom: 1px dashed var(--accent); }
+.clickable:hover { opacity: 0.7; }
+
+/* 分析卡片 */
+.analysis-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
+.analysis-card { padding: 16px 20px; border-radius: var(--radius); background: var(--surface-2); border: 1px solid var(--surface-3); }
+.analysis-card .ac-title { font-family: var(--font-display); font-size: 13px; font-weight: 600; margin-bottom: 6px; }
+.analysis-card .ac-title.low { color: var(--red); }
+.analysis-card .ac-title.high { color: var(--green); }
+.analysis-card .ac-body { font-size: 13px; color: var(--ink-2); line-height: 1.7; }
+
+/* 漏斗容器 */
+.funnel-container { display: flex; gap: 32px; align-items: flex-start; }
+.funnel-chart { flex: 1; min-height: 380px; }
+.funnel-metrics { min-width: 220px; display: flex; flex-direction: column; gap: 20px; padding-top: 8px; }
+.metric-block { text-align: left; }
+.metric-block .ml { font-size: 12px; color: var(--ink-3); margin-bottom: 4px; letter-spacing: 0.05em; }
+.metric-block .mv { font-family: var(--font-display); font-size: 24px; font-weight: 700; color: var(--ink); }
+.metric-block .ms { font-size: 11px; color: var(--ink-3); margin-top: 2px; font-family: var(--font-mono); }
+
+/* Card tabs (在途) */
+.card-tabs { display: flex; gap: 10px; margin-bottom: 16px; }
+.card-tab { flex: 1; padding: 14px; border-radius: var(--radius); border: 1px solid var(--surface-3); text-align: center; cursor: pointer; transition: all 0.2s; background: var(--surface); }
+.card-tab:hover { border-color: var(--ink-4); }
+.card-tab.active { border-color: var(--accent); background: var(--accent-bg); }
+.card-tab .ct-num { font-family: var(--font-display); font-size: 24px; font-weight: 700; }
+.card-tab .ct-label { font-size: 12px; color: var(--ink-3); margin-top: 2px; }
+
+/* Sub pages */
+.sub-page { display: none; }
+.sub-page.active { display: block; animation: pageIn 0.2s ease; }
+@keyframes pageIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+/* Summary */
+.summary { font-size: 13px; color: var(--ink-2); padding: 10px 14px; background: var(--surface-2); border-radius: var(--radius); margin-bottom: 16px; border-left: 3px solid var(--surface-3); }
+
+/* Footer */
+.footer { text-align: center; padding: 24px; font-size: 11px; color: var(--ink-4); letter-spacing: 0.05em; }
+
+/* Responsive */
+@media (max-width: 768px) {
+  .container { padding: 12px 16px; }
+  .kpi-section { grid-template-columns: 1fr; }
+  .analysis-grid { grid-template-columns: 1fr; }
+  .filters { flex-direction: column; align-items: stretch; }
+  .funnel-container { flex-direction: column; }
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div style="display:flex;align-items:center;">
+    <button class="back-btn" id="backBtn" onclick="goBack()">
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M10 3L5 8L10 13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      返回
+    </button>
+    <h1 id="pageTitle">组织档案<span class="subtitle">· 招聘模块</span></h1>
+  </div>
+  <div style="font-size:11px;color:var(--ink-4);font-family:var(--font-mono);">2026 招聘计划 · 正式员工</div>
+</div>
+
+<div class="container">
+
+<!-- ==================== 一级页 ==================== -->
+<div id="pageMain" class="page-enter">
+
+<!-- 筛选器 -->
+<div class="filters">
+  <div class="filter-item">
+    <label>部门</label>
+    <select id="filterDept" onchange="applyFilters()">
+      <option value="all">集团（全部）</option>
+      <option value="tech">技术中心</option>
+      <option value="product">产品部</option>
+      <option value="marketing">市场部</option>
+      <option value="hr">人力资源部</option>
+    </select>
+  </div>
+  <div class="filter-item">
+    <label>职级</label>
+    <select id="filterLevel" onchange="applyFilters()">
+      <option value="all">全部</option>
+      <option value="19">19级+（高招）</option>
+      <option value="16">16-18级</option>
+      <option value="13">13-15级</option>
+      <option value="12">12级以下</option>
+    </select>
+  </div>
+</div>
+
+<!-- KPI 指标卡 -->
+<div class="kpi-section">
+  <div class="kpi-card">
+    <div class="kpi-label">待招人数</div>
+    <div class="kpi-value" id="kpiWaiting">86</div>
+    <div class="kpi-sub">高招 <strong>12</strong> <span class="kpi-delta down">较上级 -8</span></div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-label">在途人数</div>
+    <div class="kpi-value" id="kpiInProcess">43</div>
+    <div class="kpi-sub">预入职 28 · 预转入 8 · 预转出 3 · 预离职 4</div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-label">预算满编率</div>
+    <div class="kpi-value" id="kpiRate">87.6%</div>
+    <div class="kpi-sub"><span class="kpi-delta down">▼ 2.3%</span> 较上级</div>
+  </div>
+</div>
+
+<!-- HC 满编率进度条 -->
+<div class="section">
+  <div class="progress-wrap">
+    <div class="progress-label">
+      <span style="font-weight:500;">HC 满编率</span>
+      <span id="progressText" style="font-family:var(--font-mono);">87.6%</span>
+    </div>
+    <div class="progress-track">
+      <div class="progress-fill normal" id="progressFill" style="width:87.6%"></div>
+    </div>
+  </div>
+</div>
+
+<!-- 招聘概览 -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-title">招聘概览</div>
+    <div class="tabs" id="overviewTabs">
+      <button class="tab active" onclick="switchOverviewTab('dept')">按部门</button>
+      <button class="tab" onclick="switchOverviewTab('seq')">按序列</button>
+    </div>
+  </div>
+  <div class="table-wrap">
+    <table id="overviewTable">
+      <thead>
+        <tr>
+          <th onclick="sortTable('overview',0)">部门 / 序列</th>
+          <th onclick="sortTable('overview',1)">招聘进展</th>
+          <th onclick="sortTable('overview',2)">待招人数</th>
+          <th onclick="sortTable('overview',3)">简历筛选中</th>
+          <th onclick="sortTable('overview',4)">面试中</th>
+          <th onclick="sortTable('overview',5)">offer审批中</th>
+          <th onclick="sortTable('overview',6)">offer确认中</th>
+        </tr>
+      </thead>
+      <tbody id="overviewBody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- 招聘转化 -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-title">招聘转化</div>
+  </div>
+
+  <!-- 数据分析 -->
+  <div class="analysis-grid">
+    <div class="analysis-card">
+      <div class="ac-title low">最低转化率</div>
+      <div class="ac-body" id="analysisLow">面试通过→offer审批通过 转化率 <strong>38.5%</strong>，较上级 <strong>-12.3%</strong>，其中市场部最低（28.1%）</div>
+    </div>
+    <div class="analysis-card">
+      <div class="ac-title high">最高转化率</div>
+      <div class="ac-body" id="analysisHigh">offer接受→入职 转化率 <strong>92.1%</strong>，较上级 <strong>+5.8%</strong>，其中技术中心最高（96.3%）</div>
+    </div>
+  </div>
+
+  <!-- 面试漏斗 (G2) -->
+  <div class="funnel-container">
+    <div class="funnel-chart" id="funnelChart"></div>
+    <div class="funnel-metrics">
+      <div class="metric-block">
+        <div class="ml">一面 → offer 转化率</div>
+        <div class="mv">48.3%</div>
+        <div class="ms">较上级 <span style="color:var(--red)">-4.2%</span></div>
+      </div>
+      <div class="metric-block">
+        <div class="ml">offer → 入职 转化率</div>
+        <div class="mv">92.1%</div>
+        <div class="ms">较上级 <span style="color:var(--green)">+5.8%</span></div>
+      </div>
+      <div class="metric-block">
+        <div class="ml">整体转化率</div>
+        <div class="mv">25.7%</div>
+        <div class="ms">简历筛选通过 → 入职</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div><!-- pageMain -->
+
+<!-- ==================== 二级页-待招详情 ==================== -->
+<div id="pageWaiting" class="sub-page">
+  <div class="filters">
+    <div class="filter-item">
+      <label>部门</label>
+      <select id="subDeptFilter" onchange="renderWaitingTable()">
+        <option value="all">全部</option>
+        <option value="tech">技术中心</option>
+        <option value="product">产品部</option>
+        <option value="marketing">市场部</option>
+      </select>
+    </div>
+    <div class="filter-item">
+      <label>序列</label>
+      <select id="subSeqFilter" onchange="renderWaitingTable()">
+        <option value="all">全部</option>
+        <option value="eng">研发</option>
+        <option value="prod">产品</option>
+        <option value="design">设计</option>
+        <option value="ops">运营</option>
+      </select>
+    </div>
+    <div class="filter-item">
+      <label>职级</label>
+      <select id="subLevelFilter" onchange="renderWaitingTable()">
+        <option value="all">全部</option>
+        <option value="19">19级+</option>
+        <option value="17">17-18级</option>
+        <option value="15">15-16级</option>
+        <option value="13">13-14级</option>
+      </select>
+    </div>
+  </div>
+  <div class="summary">预算待招人数 <strong>86</strong> 人，已提招需待招人数 <strong>64</strong> 人</div>
+  <div class="section">
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>招需职位</th>
+            <th onclick="sortTable('waiting',1)">职级</th>
+            <th>序列</th>
+            <th onclick="sortTable('waiting',3)">招需人数</th>
+            <th onclick="sortTable('waiting',4)">招需待招</th>
+            <th onclick="sortTable('waiting',5)">简历筛选中</th>
+            <th onclick="sortTable('waiting',6)">面试中</th>
+            <th onclick="sortTable('waiting',7)">offer审批中</th>
+            <th onclick="sortTable('waiting',8)">offer确认中</th>
+            <th onclick="sortTable('waiting',9)">招聘耗时</th>
+            <th>部门</th>
+          </tr>
+        </thead>
+        <tbody id="waitingBody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== 二级页-在途详情 ==================== -->
+<div id="pageInProcess" class="sub-page">
+  <div class="filters">
+    <div class="filter-item">
+      <label>部门</label>
+      <select><option>全部</option><option>技术中心</option><option>产品部</option></select>
+    </div>
+    <div class="filter-item">
+      <label>序列</label>
+      <select><option>全部</option><option>研发</option><option>产品</option></select>
+    </div>
+  </div>
+
+  <div class="card-tabs" id="inProcessTabs">
+    <div class="card-tab active" onclick="switchInProcessTab('prejoin',this)">
+      <div class="ct-num">28</div><div class="ct-label">预入职</div>
+    </div>
+    <div class="card-tab" onclick="switchInProcessTab('transferin',this)">
+      <div class="ct-num">8</div><div class="ct-label">预转入</div>
+    </div>
+    <div class="card-tab" onclick="switchInProcessTab('transferout',this)">
+      <div class="ct-num">3</div><div class="ct-label">预转出</div>
+    </div>
+    <div class="card-tab" onclick="switchInProcessTab('preleave',this)">
+      <div class="ct-num">4</div><div class="ct-label">预离职</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="table-wrap">
+      <table>
+        <thead id="inProcessHead"></thead>
+        <tbody id="inProcessBody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+</div><!-- container -->
+
+<div class="footer">组织档案 · 招聘模块 · 2026 招聘计划</div>
+
+<script>
+// ============ DATA ============
+const overviewData = {
+  dept: [
+    { name: '技术中心', status: 'slow', waiting: 32, screening: 45, interviewing: 28, offerA: 8, offerC: 5 },
+    { name: '产品部', status: 'normal', waiting: 18, screening: 22, interviewing: 15, offerA: 4, offerC: 3 },
+    { name: '市场部', status: 'over', waiting: -5, screening: 12, interviewing: 8, offerA: 2, offerC: 1 },
+    { name: '人力资源部', status: 'normal', waiting: 8, screening: 10, interviewing: 6, offerA: 2, offerC: 2 },
+    { name: '财务部', status: 'normal', waiting: 6, screening: 8, interviewing: 4, offerA: 1, offerC: 1 },
+    { name: '销售部', status: 'slow', waiting: 22, screening: 30, interviewing: 18, offerA: 5, offerC: 3 },
+    { name: '法务部', status: 'normal', waiting: 3, screening: 5, interviewing: 3, offerA: 1, offerC: 0 },
+    { name: '战略部', status: 'normal', waiting: 2, screening: 3, interviewing: 2, offerA: 1, offerC: 1 },
+  ],
+  seq: [
+    { name: '研发', status: 'slow', waiting: 28, screening: 40, interviewing: 25, offerA: 7, offerC: 4 },
+    { name: '产品', status: 'normal', waiting: 12, screening: 18, interviewing: 12, offerA: 3, offerC: 2 },
+    { name: '设计', status: 'normal', waiting: 8, screening: 12, interviewing: 7, offerA: 2, offerC: 2 },
+    { name: '运营', status: 'over', waiting: -3, screening: 10, interviewing: 6, offerA: 1, offerC: 1 },
+    { name: '市场', status: 'slow', waiting: 15, screening: 20, interviewing: 12, offerA: 3, offerC: 2 },
+    { name: '职能', status: 'normal', waiting: 5, screening: 8, interviewing: 5, offerA: 2, offerC: 1 },
+  ]
+};
+
+const waitingData = [
+  { pos: '高级前端工程师', level: 17, seq: '研发', total: 5, waiting: 3, screening: 8, interviewing: 5, offerA: 1, offerC: 0, days: 45, dept: '技术中心' },
+  { pos: '产品经理', level: 16, seq: '产品', total: 3, waiting: 2, screening: 5, interviewing: 3, offerA: 1, offerC: 0, days: 32, dept: '产品部' },
+  { pos: '后端架构师', level: 19, seq: '研发', total: 2, waiting: 2, screening: 3, interviewing: 2, offerA: 0, offerC: 0, days: 68, dept: '技术中心' },
+  { pos: '数据分析师', level: 15, seq: '研发', total: 4, waiting: 2, screening: 6, interviewing: 4, offerA: 1, offerC: 1, days: 28, dept: '技术中心' },
+  { pos: 'UI设计师', level: 14, seq: '设计', total: 2, waiting: 1, screening: 3, interviewing: 2, offerA: 0, offerC: 0, days: 21, dept: '产品部' },
+  { pos: '市场运营', level: 15, seq: '运营', total: 3, waiting: 2, screening: 4, interviewing: 3, offerA: 0, offerC: 0, days: 35, dept: '市场部' },
+  { pos: 'HRBP', level: 16, seq: '职能', total: 2, waiting: 1, screening: 2, interviewing: 1, offerA: 1, offerC: 1, days: 15, dept: '人力资源部' },
+  { pos: '销售经理', level: 17, seq: '市场', total: 4, waiting: 3, screening: 5, interviewing: 3, offerA: 1, offerC: 0, days: 42, dept: '销售部' },
+];
+
+const inProcessData = {
+  prejoin: { head: ['姓名','职级','预入职日期','高薪offer','序列','部门'], rows: [
+    ['张三','17','2026-05-06','否','研发','技术中心'],['李四','16','2026-05-12','否','产品','产品部'],
+    ['王五','19','2026-05-20','是','研发','技术中心'],['赵六','15','2026-05-08','否','设计','产品部'],
+    ['钱七','18','2026-06-01','是','研发','技术中心'],['孙八','14','2026-05-15','否','运营','市场部'],
+  ]},
+  transferin: { head: ['姓名','职级','预转入日期','调转原因','序列','部门'], rows: [
+    ['郑一','16','2026-05-05','活水','研发','技术中心'],['冯二','15','2026-05-18','活水','产品','产品部'],
+    ['陈三','17','2026-05-25','非活水','研发','技术中心'],['褚四','14','2026-06-02','活水','运营','市场部'],
+  ]},
+  transferout: { head: ['姓名','职级','预转出日期','调转原因','序列','部门'], rows: [
+    ['卫五','16','2026-05-08','活水','研发','产品部'],['蒋六','15','2026-05-20','非活水','运营','销售部'],
+    ['沈七','18','2026-06-01','活水','研发','技术中心'],
+  ]},
+  preleave: { head: ['姓名','职级','预离职日期','高薪offer','序列','部门'], rows: [
+    ['韩八','17','2026-05-30','否','研发','技术中心'],['杨九','14','2026-05-15','否','运营','市场部'],
+    ['秦十','16','2026-06-10','否','产品','产品部'],['尤十一','15','2026-05-25','否','设计','产品部'],
+  ]}
+};
+
+// ============ STATE ============
+let currentPage = 'main';
+let overviewMode = 'dept';
+let currentInProcessTab = 'prejoin';
+
+// ============ G2 漏斗图 ============
+function renderFunnel() {
+  const container = document.getElementById('funnelChart');
+  if (!container || container.offsetWidth === 0) return;
+
+  const funnelData = [
+    { stage: '简历筛选通过', count: 1284, order: 1 },
+    { stage: '一面通过', count: 876, order: 2 },
+    { stage: '面试通过', count: 612, order: 3 },
+    { stage: 'offer审批通过', count: 423, order: 4 },
+    { stage: 'offer接受', count: 358, order: 5 },
+    { stage: '入职', count: 330, order: 6 },
+  ];
+
+  const chart = new G2.Chart({ container: 'funnelChart', autoFit: true, height: 360 });
+
+  chart.options({
+    type: 'interval',
+    data: funnelData,
+    encode: { x: 'stage', y: 'count', color: 'stage', shape: 'funnel' },
+    transform: [{ type: 'symmetryY' }],
+    coordinate: { transform: [{ type: 'transpose' }] },
+    scale: {
+      color: { range: ['#1a1a2e', '#2d3a5c', '#3d5a80', '#5b7fb5', '#8aaccc', '#b8d4e8'] },
+    },
+    style: { stroke: '#fff', lineWidth: 2 },
+    labels: [
+      {
+        text: (d) => `${d.stage}\n${d.count.toLocaleString()}`,
+        position: 'inside',
+        fill: (d) => d.order <= 3 ? '#fff' : '#1a1a2e',
+        fontSize: 12,
+        fontWeight: 500,
+      }
+    ],
+    axis: { x: false, y: false },
+    legend: false,
+    tooltip: { title: 'stage', items: ['count'] },
+  });
+
+  chart.render();
+}
+
+// ============ RENDER ============
+function renderOverviewTable() {
+  const data = overviewData[overviewMode];
+  document.getElementById('overviewBody').innerHTML = data.map(r => `
+    <tr>
+      <td style="font-weight:500;">${r.name}</td>
+      <td><span class="status ${r.status}">${r.status === 'over' ? '超编' : r.status === 'slow' ? '缓慢' : '正常'}</span></td>
+      <td><span class="clickable" onclick="navigateTo('waiting','${r.name}')">${r.waiting < 0 ? '<span style="color:var(--red)">' + r.waiting + '</span>' : r.waiting}</span></td>
+      <td>${r.screening}</td><td>${r.interviewing}</td><td>${r.offerA}</td><td>${r.offerC}</td>
+    </tr>
+  `).join('');
+}
+
+function renderWaitingTable() {
+  document.getElementById('waitingBody').innerHTML = waitingData.map(r => `
+    <tr>
+      <td style="font-weight:500;">${r.pos}</td><td>${r.level}</td><td>${r.seq}</td>
+      <td>${r.total}</td><td>${r.waiting}</td><td>${r.screening}</td><td>${r.interviewing}</td>
+      <td>${r.offerA}</td><td>${r.offerC}</td><td style="font-family:var(--font-mono);">${r.days}天</td><td>${r.dept}</td>
+    </tr>
+  `).join('');
+}
+
+function renderInProcessTable() {
+  const data = inProcessData[currentInProcessTab];
+  document.getElementById('inProcessHead').innerHTML = '<tr>' + data.head.map(h => `<th>${h}</th>`).join('') + '</tr>';
+  document.getElementById('inProcessBody').innerHTML = data.rows.map(r => `
+    <tr>${r.map((c,i) => {
+      if (i===0 && currentInProcessTab!=='prejoin') return `<td><span class="clickable">${c}</span></td>`;
+      if (c==='是') return `<td><span style="color:var(--red);font-weight:500;">是</span></td>`;
+      return `<td>${c}</td>`;
+    }).join('')}</tr>
+  `).join('');
+}
+
+// ============ NAVIGATION ============
+function navigateTo(page, dept) {
+  document.getElementById('pageMain').style.display = 'none';
+  document.getElementById('backBtn').style.display = 'flex';
+  if (page === 'waiting') {
+    document.getElementById('pageWaiting').style.display = 'block';
+    document.getElementById('pageWaiting').classList.add('active');
+    document.getElementById('pageTitle').innerHTML = '待招详情<span class="subtitle">· 招聘模块</span>';
+    currentPage = 'waiting';
+    renderWaitingTable();
+  } else if (page === 'inprocess') {
+    document.getElementById('pageInProcess').style.display = 'block';
+    document.getElementById('pageInProcess').classList.add('active');
+    document.getElementById('pageTitle').innerHTML = '在途详情<span class="subtitle">· 招聘模块</span>';
+    currentPage = 'inprocess';
+    renderInProcessTable();
+  }
+}
+
+function goBack() {
+  document.getElementById('pageWaiting').style.display = 'none';
+  document.getElementById('pageWaiting').classList.remove('active');
+  document.getElementById('pageInProcess').style.display = 'none';
+  document.getElementById('pageInProcess').classList.remove('active');
+  document.getElementById('pageMain').style.display = 'block';
+  document.getElementById('backBtn').style.display = 'none';
+  document.getElementById('pageTitle').innerHTML = '组织档案<span class="subtitle">· 招聘模块</span>';
+  currentPage = 'main';
+}
+
+// ============ TABS ============
+function switchOverviewTab(mode) {
+  overviewMode = mode;
+  document.querySelectorAll('#overviewTabs .tab').forEach(t => t.classList.remove('active'));
+  event.currentTarget.classList.add('active');
+  renderOverviewTable();
+}
+
+function switchInProcessTab(tab, el) {
+  currentInProcessTab = tab;
+  document.querySelectorAll('.card-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  renderInProcessTable();
+}
+
+// ============ SORT ============
+function sortTable(table, col) {
+  const tbody = table === 'overview' ? document.getElementById('overviewBody') : document.getElementById('waitingBody');
+  const rows = Array.from(tbody.querySelectorAll('tr'));
+  const th = tbody.closest('table').querySelectorAll('th')[col];
+  const isAsc = th.classList.contains('sorted-asc');
+  tbody.closest('table').querySelectorAll('th').forEach(h => h.classList.remove('sorted-asc','sorted-desc'));
+  rows.sort((a,b) => {
+    const aV = parseFloat(a.cells[col].textContent) || a.cells[col].textContent;
+    const bV = parseFloat(b.cells[col].textContent) || b.cells[col].textContent;
+    if (typeof aV === 'number' && typeof bV === 'number') return isAsc ? bV - aV : aV - bV;
+    return isAsc ? String(bV).localeCompare(String(aV),'zh') : String(aV).localeCompare(String(bV),'zh');
+  });
+  th.classList.add(isAsc ? 'sorted-desc' : 'sorted-asc');
+  rows.forEach(r => tbody.appendChild(r));
+}
+
+// ============ FILTERS ============
+function applyFilters() {
+  const dept = document.getElementById('filterDept').value;
+  const map = {
+    all: { w: 86, p: 43, r: '87.6%', rc: false },
+    tech: { w: 32, p: 18, r: '82.3%', rc: false },
+    product: { w: 18, p: 12, r: '91.2%', rc: false },
+    marketing: { w: -5, p: 8, r: '105.8%', rc: true },
+    hr: { w: 8, p: 6, r: '94.1%', rc: false },
+  };
+  const d = map[dept] || map.all;
+  document.getElementById('kpiWaiting').textContent = d.w;
+  document.getElementById('kpiWaiting').className = 'kpi-value' + (d.rc ? ' negative' : '');
+  document.getElementById('kpiInProcess').textContent = d.p;
+  document.getElementById('kpiRate').textContent = d.r;
+  const rateNum = parseFloat(d.r);
+  document.getElementById('progressText').textContent = d.r;
+  const fill = document.getElementById('progressFill');
+  fill.style.width = Math.min(rateNum, 100) + '%';
+  fill.className = 'progress-fill ' + (rateNum > 100 ? 'over' : 'normal');
+}
+
+// ============ INIT ============
+renderOverviewTable();
+// 延迟渲染 G2，等容器宽度稳定
+setTimeout(renderFunnel, 100);
+window.addEventListener('resize', renderFunnel);
+</script>
+</body>
+</html>
