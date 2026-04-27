@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>组织档案 · 招聘模块 v3</title>
+<script src="https://unpkg.com/@antv/g2@5/dist/g2.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --ink:#111827;--ink2:#4b5563;--ink3:#9ca3af;--ink4:#d1d5db;
+  --bg:#f9fafb;--card:#fff;--border:#e5e7eb;
+  --accent:#111827;--accent2:#3b82f6;--accent3:#059669;--red:#dc2626;--orange:#d97706;
+  --font:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Helvetica Neue",sans-serif;
+  --mono:"SF Mono","Fira Code","Consolas",monospace;
+}
+body{font-family:var(--font);background:var(--bg);color:var(--ink);font-size:14px;line-height:1.5}
+
+/* Layout */
+.topbar{background:var(--card);border-bottom:1px solid var(--border);padding:0 24px;height:48px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:99}
+.topbar h1{font-size:15px;font-weight:600;display:flex;align-items:center;gap:8px}
+.topbar h1 .crumb{color:var(--ink3);font-weight:400}
+.topbar .meta{font-size:12px;color:var(--ink3);font-family:var(--mono)}
+.back{display:none;align-items:center;gap:4px;color:var(--accent2);font-size:13px;cursor:pointer;background:none;border:none;font-family:var(--font)}
+.back svg{width:14px;height:14px}
+.wrap{max-width:1200px;margin:0 auto;padding:16px 24px 32px}
+
+/* Filter bar */
+.fbar{background:var(--card);border:1px solid var(--border);border-radius:6px;padding:8px 12px;display:flex;gap:16px;align-items:center;margin-bottom:16px}
+.fbar label{font-size:12px;color:var(--ink3);font-weight:500}
+.fbar select{border:1px solid var(--border);border-radius:4px;padding:4px 8px;font-size:13px;color:var(--ink);background:var(--card);cursor:pointer;outline:none}
+.fbar select:focus{border-color:var(--accent2)}
+
+/* KPI row */
+.kpi-row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px}
+.kpi{background:var(--card);border:1px solid var(--border);border-radius:6px;padding:16px 20px;position:relative}
+.kpi::after{content:'';position:absolute;top:12px;right:16px;width:6px;height:6px;border-radius:50%}
+.kpi:nth-child(1)::after{background:var(--ink)}
+.kpi:nth-child(2)::after{background:var(--accent2)}
+.kpi:nth-child(3)::after{background:var(--accent3)}
+.kpi .kl{font-size:11px;color:var(--ink3);text-transform:uppercase;letter-spacing:.06em;font-weight:600}
+.kpi .kv{font-size:28px;font-weight:700;margin:4px 0 2px;font-variant-numeric:tabular-nums}
+.kpi .kv.red{color:var(--red)}
+.kpi .ks{font-size:11px;color:var(--ink3);display:flex;gap:8px;align-items:center}
+.kpi .tag{padding:1px 5px;border-radius:3px;font-size:10px;font-weight:600;font-family:var(--mono)}
+.kpi .tag.up{background:#ecfdf5;color:var(--accent3)}
+.kpi .tag.down{background:#fef2f2;color:var(--red)}
+
+/* Card */
+.card{background:var(--card);border:1px solid var(--border);border-radius:6px;padding:16px 20px;margin-bottom:16px}
+.card-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.card-title{font-size:14px;font-weight:600}
+
+/* Tabs */
+.tabs{display:flex;gap:0}
+.tab{padding:6px 12px;font-size:12px;color:var(--ink3);cursor:pointer;border-bottom:2px solid transparent;background:none;border-top:none;border-left:none;border-right:none;font-family:var(--font);font-weight:500}
+.tab:hover{color:var(--ink)}
+.tab.on{color:var(--accent2);border-bottom-color:var(--accent2)}
+
+/* Progress */
+.prog{margin-bottom:4px}
+.prog-lbl{display:flex;justify-content:space-between;font-size:11px;color:var(--ink3);margin-bottom:4px}
+.prog-bar{height:5px;background:var(--border);border-radius:3px;overflow:hidden}
+.prog-fill{height:100%;border-radius:3px;transition:width .6s ease}
+.prog-fill.ok{background:var(--accent2)}
+.prog-fill.bad{background:var(--red)}
+
+/* Table */
+.tbl{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{padding:8px 10px;text-align:left;font-size:11px;font-weight:600;color:var(--ink3);border-bottom:1px solid var(--border);white-space:nowrap;cursor:pointer;user-select:none;letter-spacing:.03em}
+th:hover{color:var(--ink)}
+td{padding:9px 10px;border-bottom:1px solid #f3f4f6}
+tr:hover td{background:#f9fafb}
+.st{padding:2px 7px;border-radius:3px;font-size:11px;font-weight:600}
+.st.over{background:#fef2f2;color:var(--red)}
+.st.slow{background:#fffbeb;color:var(--orange)}
+.st.ok{background:#ecfdf5;color:var(--accent3)}
+.cl{color:var(--accent2);cursor:pointer;border-bottom:1px dashed var(--accent2)}
+.cl:hover{opacity:.7}
+
+/* Analysis */
+.ana{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
+.ana-card{padding:12px 16px;border-radius:6px;background:var(--bg);border:1px solid var(--border)}
+.ana-card .at{font-size:12px;font-weight:600;margin-bottom:4px}
+.ana-card .at.lo{color:var(--red)}
+.ana-card .at.hi{color:var(--accent3)}
+.ana-card .ab{font-size:13px;color:var(--ink2);line-height:1.6}
+
+/* Funnel */
+.funnel-wrap{display:flex;gap:24px;align-items:flex-start}
+.funnel-box{flex:1;min-height:340px}
+.funnel-side{min-width:200px;display:flex;flex-direction:column;gap:16px;padding-top:4px}
+.funnel-m .fl{font-size:11px;color:var(--ink3);margin-bottom:2px;letter-spacing:.04em}
+.funnel-m .fv{font-size:22px;font-weight:700}
+.funnel-m .fs{font-size:11px;color:var(--ink3);font-family:var(--mono)}
+
+/* Card tabs */
+.ctabs{display:flex;gap:8px;margin-bottom:12px}
+.ctab{flex:1;padding:10px;border:1px solid var(--border);border-radius:6px;text-align:center;cursor:pointer;background:var(--card)}
+.ctab:hover{border-color:var(--ink4)}
+.ctab.on{border-color:var(--accent2);background:#eff6ff}
+.ctab .cn{font-size:22px;font-weight:700}
+.ctab .cl2{font-size:11px;color:var(--ink3)}
+
+/* Summary */
+.sum{font-size:13px;color:var(--ink2);padding:8px 12px;background:var(--bg);border-radius:4px;margin-bottom:12px;border-left:3px solid var(--border)}
+
+/* Sub pages */
+.sub{display:none}
+.sub.on{display:block;animation:fadeUp .2s ease}
+@keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+/* Footer */
+.foot{text-align:center;padding:20px;font-size:11px;color:var(--ink4)}
+
+/* Mobile */
+@media(max-width:768px){
+  .wrap{padding:12px 16px}
+  .kpi-row{grid-template-columns:1fr}
+  .ana{grid-template-columns:1fr}
+  .fbar{flex-direction:column;align-items:stretch}
+  .funnel-wrap{flex-direction:column}
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div style="display:flex;align-items:center;gap:8px">
+    <button class="back" id="backBtn" onclick="goBack()"><svg viewBox="0 0 16 16" fill="none"><path d="M10 3L5 8l5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>返回</button>
+    <h1 id="pgTitle">组织档案 <span class="crumb">· 招聘模块</span></h1>
+  </div>
+  <div class="meta">2026 招聘计划 · 正式员工</div>
+</div>
+
+<div class="wrap">
+
+<!-- ===== 一级页 ===== -->
+<div id="pgMain">
+
+<div class="fbar">
+  <div><label>部门</label> <select id="fDept" onchange="filter()"><option value="all">集团（全部）</option><option value="tech">技术中心</option><option value="prod">产品部</option><option value="mkt">市场部</option><option value="hr">人力资源部</option><option value="sales">销售部</option></select></div>
+  <div><label>职级</label> <select id="fLevel" onchange="filter()"><option value="all">全部</option><option value="19">19级+（高招）</option><option value="16">16-18级</option><option value="13">13-15级</option></select></div>
+</div>
+
+<div class="kpi-row">
+  <div class="kpi"><div class="kl">待招人数</div><div class="kv" id="kv1">86</div><div class="ks">高招 <b>12</b> <span class="tag down">较上级 -8</span></div></div>
+  <div class="kpi"><div class="kl">在途人数</div><div class="kv" id="kv2">43</div><div class="ks">预入职28 · 预转入8 · 预转出3 · 预离职4</div></div>
+  <div class="kpi"><div class="kl">预算满编率</div><div class="kv" id="kv3">87.6%</div><div class="ks"><span class="tag down">▼ 2.3%</span> 较上级</div></div>
+</div>
+
+<div class="card">
+  <div class="prog">
+    <div class="prog-lbl"><span style="font-weight:600">HC 满编率</span><span id="progNum">87.6%</span></div>
+    <div class="prog-bar"><div class="prog-fill ok" id="progFill" style="width:87.6%"></div></div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-hd">
+    <div class="card-title">招聘概览</div>
+    <div class="tabs" id="ovTabs"><button class="tab on" onclick="ovTab('dept')">按部门</button><button class="tab" onclick="ovTab('seq')">按序列</button></div>
+  </div>
+  <div class="tbl"><table>
+    <thead><tr><th onclick="sort('ov',0)">部门 / 序列</th><th onclick="sort('ov',1)">招聘进展</th><th onclick="sort('ov',2)">待招人数</th><th onclick="sort('ov',3)">简历筛选中</th><th onclick="sort('ov',4)">面试中</th><th onclick="sort('ov',5)">offer审批中</th><th onclick="sort('ov',6)">offer确认中</th></tr></thead>
+    <tbody id="ovBody"></tbody>
+  </table></div>
+</div>
+
+<div class="card">
+  <div class="card-hd"><div class="card-title">招聘转化</div></div>
+  <div class="ana">
+    <div class="ana-card"><div class="at lo">最低转化率</div><div class="ab">面试通过→offer审批通过 转化率 <b>38.5%</b>，较上级 <b>-12.3%</b>，其中市场部最低（28.1%）</div></div>
+    <div class="ana-card"><div class="at hi">最高转化率</div><div class="ab">offer接受→入职 转化率 <b>92.1%</b>，较上级 <b>+5.8%</b>，其中技术中心最高（96.3%）</div></div>
+  </div>
+  <div class="funnel-wrap">
+    <div class="funnel-box" id="funnelBox"></div>
+    <div class="funnel-side">
+      <div class="funnel-m"><div class="fl">一面 → offer 转化率</div><div class="fv">48.3%</div><div class="fs">较上级 <span style="color:var(--red)">-4.2%</span></div></div>
+      <div class="funnel-m"><div class="fl">offer → 入职 转化率</div><div class="fv">92.1%</div><div class="fs">较上级 <span style="color:var(--accent3)">+5.8%</span></div></div>
+      <div class="funnel-m"><div class="fl">整体转化率</div><div class="fv">25.7%</div><div class="fs">简历筛选通过 → 入职</div></div>
+    </div>
+  </div>
+</div>
+
+</div><!-- pgMain -->
+
+<!-- ===== 待招详情 ===== -->
+<div id="pgWait" class="sub">
+<div class="fbar">
+  <div><label>部门</label> <select onchange="renderWait()"><option>全部</option><option>技术中心</option><option>产品部</option><option>市场部</option></select></div>
+  <div><label>序列</label> <select onchange="renderWait()"><option>全部</option><option>研发</option><option>产品</option><option>设计</option><option>运营</option></select></div>
+  <div><label>职级</label> <select onchange="renderWait()"><option>全部</option><option>19级+</option><option>17-18级</option><option>15-16级</option></select></div>
+</div>
+<div class="sum">预算待招人数 <b>86</b> 人，已提招需待招人数 <b>64</b> 人</div>
+<div class="card"><div class="tbl"><table>
+  <thead><tr><th>招需职位</th><th onclick="sort('wt',1)">职级</th><th>序列</th><th onclick="sort('wt',3)">招需人数</th><th onclick="sort('wt',4)">招需待招</th><th onclick="sort('wt',5)">简历筛选中</th><th onclick="sort('wt',6)">面试中</th><th onclick="sort('wt',7)">offer审批中</th><th onclick="sort('wt',8)">offer确认中</th><th onclick="sort('wt',9)">招聘耗时</th><th>部门</th></tr></thead>
+  <tbody id="wtBody"></tbody>
+</table></div></div>
+</div>
+
+<!-- ===== 在途详情 ===== -->
+<div id="pgWay" class="sub">
+<div class="fbar">
+  <div><label>部门</label> <select><option>全部</option><option>技术中心</option><option>产品部</option></select></div>
+  <div><label>序列</label> <select><option>全部</option><option>研发</option><option>产品</option></select></div>
+  <div><label>职级</label> <select><option>全部</option><option>17-18级</option><option>15-16级</option></select></div>
+</div>
+<div class="ctabs" id="wayTabs">
+  <div class="ctab on" onclick="wayTab('prejoin',this)"><div class="cn">28</div><div class="cl2">预入职</div></div>
+  <div class="ctab" onclick="wayTab('tin',this)"><div class="cn">8</div><div class="cl2">预转入</div></div>
+  <div class="ctab" onclick="wayTab('tout',this)"><div class="cn">3</div><div class="cl2">预转出</div></div>
+  <div class="ctab" onclick="wayTab('leave',this)"><div class="cn">4</div><div class="cl2">预离职</div></div>
+</div>
+<div class="card"><div class="tbl"><table>
+  <thead id="wayHead"></thead>
+  <tbody id="wayBody"></tbody>
+</table></div></div>
+</div>
+
+</div><!-- wrap -->
+
+<div class="foot">组织档案 · 招聘模块 · 2026</div>
+
+<script>
+// Data
+const OV={
+  dept:[
+    {n:'技术中心',s:'slow',w:32,sc:45,iv:28,oa:8,oc:5},
+    {n:'产品部',s:'ok',w:18,sc:22,iv:15,oa:4,oc:3},
+    {n:'市场部',s:'over',w:-5,sc:12,iv:8,oa:2,oc:1},
+    {n:'人力资源部',s:'ok',w:8,sc:10,iv:6,oa:2,oc:2},
+    {n:'财务部',s:'ok',w:6,sc:8,iv:4,oa:1,oc:1},
+    {n:'销售部',s:'slow',w:22,sc:30,iv:18,oa:5,oc:3},
+    {n:'法务部',s:'ok',w:3,sc:5,iv:3,oa:1,oc:0},
+    {n:'战略部',s:'ok',w:2,sc:3,iv:2,oa:1,oc:1}
+  ],
+  seq:[
+    {n:'研发',s:'slow',w:28,sc:40,iv:25,oa:7,oc:4},
+    {n:'产品',s:'ok',w:12,sc:18,iv:12,oa:3,oc:2},
+    {n:'设计',s:'ok',w:8,sc:12,iv:7,oa:2,oc:2},
+    {n:'运营',s:'over',w:-3,sc:10,iv:6,oa:1,oc:1},
+    {n:'市场',s:'slow',w:15,sc:20,iv:12,oa:3,oc:2},
+    {n:'职能',s:'ok',w:5,sc:8,iv:5,oa:2,oc:1}
+  ]
+};
+const WT=[
+  {p:'高级前端工程师',l:17,q:'研发',t:5,w:3,sc:8,iv:5,oa:1,oc:0,d:45,dp:'技术中心'},
+  {p:'产品经理',l:16,q:'产品',t:3,w:2,sc:5,iv:3,oa:1,oc:0,d:32,dp:'产品部'},
+  {p:'后端架构师',l:19,q:'研发',t:2,w:2,sc:3,iv:2,oa:0,oc:0,d:68,dp:'技术中心'},
+  {p:'数据分析师',l:15,q:'研发',t:4,w:2,sc:6,iv:4,oa:1,oc:1,d:28,dp:'技术中心'},
+  {p:'UI设计师',l:14,q:'设计',t:2,w:1,sc:3,iv:2,oa:0,oc:0,d:21,dp:'产品部'},
+  {p:'市场运营',l:15,q:'运营',t:3,w:2,sc:4,iv:3,oa:0,oc:0,d:35,dp:'市场部'},
+  {p:'HRBP',l:16,q:'职能',t:2,w:1,sc:2,iv:1,oa:1,oc:1,d:15,dp:'人力资源部'},
+  {p:'销售经理',l:17,q:'市场',t:4,w:3,sc:5,iv:3,oa:1,oc:0,d:42,dp:'销售部'}
+];
+const WAY={
+  prejoin:{h:['姓名','职级','预入职日期','高薪offer','序列','部门'],r:[
+    ['张三','17','2026-05-06','否','研发','技术中心'],['李四','16','2026-05-12','否','产品','产品部'],
+    ['王五','19','2026-05-20','是','研发','技术中心'],['赵六','15','2026-05-08','否','设计','产品部'],
+    ['钱七','18','2026-06-01','是','研发','技术中心'],['孙八','14','2026-05-15','否','运营','市场部']
+  ]},
+  tin:{h:['姓名','职级','预转入日期','调转原因','序列','部门'],r:[
+    ['郑一','16','2026-05-05','活水','研发','技术中心'],['冯二','15','2026-05-18','活水','产品','产品部'],
+    ['陈三','17','2026-05-25','非活水','研发','技术中心'],['褚四','14','2026-06-02','活水','运营','市场部']
+  ]},
+  tout:{h:['姓名','职级','预转出日期','调转原因','序列','部门'],r:[
+    ['卫五','16','2026-05-08','活水','研发','产品部'],['蒋六','15','2026-05-20','非活水','运营','销售部'],
+    ['沈七','18','2026-06-01','活水','研发','技术中心']
+  ]},
+  leave:{h:['姓名','职级','预离职日期','高薪offer','序列','部门'],r:[
+    ['韩八','17','2026-05-30','否','研发','技术中心'],['杨九','14','2026-05-15','否','运营','市场部'],
+    ['秦十','16','2026-06-10','否','产品','产品部'],['尤十一','15','2026-05-25','否','设计','产品部']
+  ]}
+};
+
+let mode='dept',curWay='prejoin';
+
+// Render
+function renderOv(){
+  const d=OV[mode];
+  document.getElementById('ovBody').innerHTML=d.map(r=>`<tr>
+    <td style="font-weight:500">${r.n}</td>
+    <td><span class="st ${r.s}">${r.s==='over'?'超编':r.s==='slow'?'缓慢':'正常'}</span></td>
+    <td><span class="cl" onclick="nav('wait')">${r.w<0?'<span style="color:var(--red)">'+r.w+'</span>':r.w}</span></td>
+    <td>${r.sc}</td><td>${r.iv}</td><td>${r.oa}</td><td>${r.oc}</td>
+  </tr>`).join('');
+}
+function renderWait(){
+  document.getElementById('wtBody').innerHTML=WT.map(r=>`<tr>
+    <td style="font-weight:500">${r.p}</td><td>${r.l}</td><td>${r.q}</td>
+    <td>${r.t}</td><td>${r.w}</td><td>${r.sc}</td><td>${r.iv}</td>
+    <td>${r.oa}</td><td>${r.oc}</td><td style="font-family:var(--mono)">${r.d}天</td><td>${r.dp}</td>
+  </tr>`).join('');
+}
+function renderWay(){
+  const d=WAY[curWay];
+  document.getElementById('wayHead').innerHTML='<tr>'+d.h.map(h=>`<th>${h}</th>`).join('')+'</tr>';
+  document.getElementById('wayBody').innerHTML=d.r.map(r=>`<tr>${r.map((c,i)=>{
+    if(i===0&&curWay!=='prejoin') return `<td><span class="cl">${c}</span></td>`;
+    if(c==='是') return `<td><span style="color:var(--red);font-weight:600">是</span></td>`;
+    return `<td>${c}</td>`;
+  }).join('')}</tr>`).join('');
+}
+
+// Funnel (G2)
+function renderFunnel(){
+  const box=document.getElementById('funnelBox');
+  if(!box||box.offsetWidth===0) return;
+  const data=[
+    {stage:'简历筛选通过',count:1284,order:1},
+    {stage:'一面通过',count:876,order:2},
+    {stage:'面试通过',count:612,order:3},
+    {stage:'offer审批通过',count:423,order:4},
+    {stage:'offer接受',count:358,order:5},
+    {stage:'入职',count:330,order:6}
+  ];
+  const c=new G2.Chart({container:'funnelBox',autoFit:true,height:340});
+  c.options({
+    type:'interval',
+    data,
+    encode:{x:'stage',y:'count',color:'stage',shape:'funnel'},
+    transform:[{type:'symmetryY'}],
+    coordinate:{transform:[{type:'transpose'}]},
+    scale:{color:{range:['#111827','#1e3a5f','#2563eb','#60a5fa','#93c5fd','#dbeafe']}},
+    style:{stroke:'#fff',lineWidth:2},
+    labels:[{text:d=>`${d.stage}\n${d.count.toLocaleString()}`,position:'inside',fill:d=>d.order<=3?'#fff':'#111827',fontSize:11,fontWeight:500}],
+    axis:{x:false,y:false},
+    legend:false,
+    tooltip:{title:'stage',items:['count']}
+  });
+  c.render();
+}
+
+// Nav
+function nav(pg){
+  document.getElementById('pgMain').style.display='none';
+  document.getElementById('backBtn').style.display='flex';
+  if(pg==='wait'){
+    document.getElementById('pgWait').classList.add('on');
+    document.getElementById('pgTitle').innerHTML='待招详情 <span class="crumb">· 招聘模块</span>';
+    renderWait();
+  }else{
+    document.getElementById('pgWay').classList.add('on');
+    document.getElementById('pgTitle').innerHTML='在途详情 <span class="crumb">· 招聘模块</span>';
+    renderWay();
+  }
+}
+function goBack(){
+  document.getElementById('pgWait').classList.remove('on');
+  document.getElementById('pgWay').classList.remove('on');
+  document.getElementById('pgMain').style.display='block';
+  document.getElementById('backBtn').style.display='none';
+  document.getElementById('pgTitle').innerHTML='组织档案 <span class="crumb">· 招聘模块</span>';
+}
+
+// Tabs
+function ovTab(m){mode=m;document.querySelectorAll('#ovTabs .tab').forEach(t=>t.classList.remove('on'));event.currentTarget.classList.add('on');renderOv()}
+function wayTab(k,el){curWay=k;document.querySelectorAll('.ctab').forEach(t=>t.classList.remove('on'));el.classList.add('on');renderWay()}
+
+// Sort
+function sort(tbl,col){
+  const tb=tbl==='ov'?document.getElementById('ovBody'):document.getElementById('wtBody');
+  const rows=Array.from(tb.querySelectorAll('tr'));
+  const th=tb.closest('table').querySelectorAll('th')[col];
+  const asc=th.classList.contains('s-asc');
+  tb.closest('table').querySelectorAll('th').forEach(h=>h.classList.remove('s-asc','s-desc'));
+  rows.sort((a,b)=>{
+    const av=parseFloat(a.cells[col].textContent)||a.cells[col].textContent;
+    const bv=parseFloat(b.cells[col].textContent)||b.cells[col].textContent;
+    if(typeof av==='number'&&typeof bv==='number') return asc?bv-av:av-bv;
+    return asc?String(bv).localeCompare(String(av),'zh'):String(av).localeCompare(String(bv),'zh');
+  });
+  th.classList.add(asc?'s-desc':'s-asc');
+  rows.forEach(r=>tb.appendChild(r));
+}
+
+// Filter
+function filter(){
+  const d=document.getElementById('fDept').value;
+  const m={all:{w:86,p:43,r:'87.6%',red:false},tech:{w:32,p:18,r:'82.3%',red:false},prod:{w:18,p:12,r:'91.2%',red:false},mkt:{w:-5,p:8,r:'105.8%',red:true},hr:{w:8,p:6,r:'94.1%',red:false},sales:{w:22,p:15,r:'80.1%',red:false}};
+  const v=m[d]||m.all;
+  document.getElementById('kv1').textContent=v.w;
+  document.getElementById('kv1').className='kv'+(v.red?' red':'');
+  document.getElementById('kv2').textContent=v.p;
+  document.getElementById('kv3').textContent=v.r;
+  const n=parseFloat(v.r);
+  document.getElementById('progNum').textContent=v.r;
+  const f=document.getElementById('progFill');
+  f.style.width=Math.min(n,100)+'%';
+  f.className='prog-fill '+(n>100?'bad':'ok');
+}
+
+// Init
+renderOv();
+setTimeout(renderFunnel,120);
+window.addEventListener('resize',renderFunnel);
+</script>
+</body>
+</html>
