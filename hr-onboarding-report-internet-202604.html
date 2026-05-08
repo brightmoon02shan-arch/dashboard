@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>互联网业务部 2026年4月 入职报告</title>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f5f5; color: #333; }
+.header { background: linear-gradient(135deg, #FF6900, #FF8C33); color: white; padding: 24px 32px; }
+.header h1 { font-size: 22px; font-weight: 600; }
+.header p { font-size: 13px; opacity: 0.85; margin-top: 4px; }
+.container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+.filters { background: white; border-radius: 8px; padding: 16px 20px; margin-bottom: 16px; display: flex; gap: 16px; flex-wrap: wrap; align-items: center; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+.filters label { font-size: 13px; color: #666; }
+.filters select, .filters input { padding: 6px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 13px; }
+.kpi-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 16px; }
+.kpi-card { background: white; border-radius: 8px; padding: 20px; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+.kpi-card .value { font-size: 32px; font-weight: 700; color: #FF6900; }
+.kpi-card .label { font-size: 13px; color: #666; margin-top: 4px; }
+.kpi-card .sub { font-size: 12px; color: #999; margin-top: 2px; }
+.chart-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+.chart-card { background: white; border-radius: 8px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+.chart-card h3 { font-size: 14px; font-weight: 600; margin-bottom: 12px; }
+.chart-full { grid-column: 1 / -1; }
+.table-card { background: white; border-radius: 8px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); margin-bottom: 16px; }
+.table-card h3 { font-size: 14px; font-weight: 600; margin-bottom: 12px; }
+.search-box { margin-bottom: 12px; }
+.search-box input { width: 100%; max-width: 300px; padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 13px; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th { background: #f9f9f9; padding: 10px 12px; text-align: left; font-weight: 600; border-bottom: 2px solid #eee; cursor: pointer; user-select: none; }
+th:hover { background: #f0f0f0; }
+td { padding: 8px 12px; border-bottom: 1px solid #f0f0f0; }
+tr:hover td { background: #fff8f0; }
+.tag-high { background: #FF6900; color: white; padding: 2px 8px; border-radius: 10px; font-size: 11px; }
+.tag-risk { background: #E53E3E; color: white; padding: 2px 8px; border-radius: 10px; font-size: 11px; }
+.risk-section { border-left: 3px solid #E53E3E; }
+@media (max-width: 768px) { .chart-row { grid-template-columns: 1fr; } .kpi-row { grid-template-columns: 1fr 1fr; } }
+</style>
+</head>
+<body>
+<div class="header">
+  <h1>📊 互联网业务部 2026年4月 入职报告</h1>
+  <p>数据截止：2026-05-07 | 数据来源：人力数仓</p>
+</div>
+<div class="container">
+  <!-- Filters -->
+  <div class="filters">
+    <div><label>二级部门</label><br>
+      <select id="filterDept" onchange="filterTable()">
+        <option value="">全部</option>
+      </select>
+    </div>
+    <div><label>序列</label><br>
+      <select id="filterSeq" onchange="filterTable()">
+        <option value="">全部</option>
+      </select>
+    </div>
+    <div><label>职级</label><br>
+      <select id="filterGrade" onchange="filterTable()">
+        <option value="">全部</option>
+        <option value="17+">17级及以上</option>
+        <option value="13-16">13-16级</option>
+        <option value="none">无职级</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- KPI Cards -->
+  <div class="kpi-row">
+    <div class="kpi-card"><div class="value">56</div><div class="label">4月入职总人数</div><div class="sub">环比3月 -39.8%</div></div>
+    <div class="kpi-card"><div class="value">9</div><div class="label">高阶人群（17级+）</div><div class="sub">环比3月 +350%</div></div>
+    <div class="kpi-card"><div class="value" style="color:#E53E3E">15.7%</div><div class="label">近3月新人流失率</div><div class="sub">28人离职 / 178人入职</div></div>
+    <div class="kpi-card"><div class="value">2</div><div class="label">已转正人数</div><div class="sub">48人待转正</div></div>
+  </div>
+
+  <!-- Charts -->
+  <div class="chart-row">
+    <div class="chart-card"><h3>📈 入职趋势（近6月）</h3><div id="trendChart" style="height:280px"></div></div>
+    <div class="chart-card"><h3>🥧 二级部门分布</h3><div id="deptChart" style="height:280px"></div></div>
+  </div>
+  <div class="chart-row">
+    <div class="chart-card"><h3>🏷️ 序列分布</h3><div id="seqChart" style="height:250px"></div></div>
+    <div class="chart-card"><h3>⚠️ 离职原因分布</h3><div id="reasonChart" style="height:250px"></div></div>
+  </div>
+
+  <!-- Detail Table -->
+  <div class="table-card">
+    <h3>📋 入职人员明细（4月）</h3>
+    <div class="search-box"><input type="text" id="searchInput" placeholder="搜索姓名、部门..." oninput="filterTable()"></div>
+    <table id="mainTable">
+      <thead><tr>
+        <th onclick="sortTable(0)">姓名</th>
+        <th onclick="sortTable(1)">职级</th>
+        <th onclick="sortTable(2)">序列</th>
+        <th onclick="sortTable(3)">二级部门</th>
+        <th onclick="sortTable(4)">三级部门</th>
+        <th onclick="sortTable(5)">入职日期</th>
+      </tr></thead>
+      <tbody id="tableBody"></tbody>
+    </table>
+  </div>
+
+  <!-- Risk Table -->
+  <div class="table-card risk-section">
+    <h3>⚠️ 近3月入职后离职人员（28人）</h3>
+    <table>
+      <thead><tr><th>姓名</th><th>部门</th><th>入职日期</th><th>离职日期</th><th>在职天数</th><th>离职原因</th></tr></thead>
+      <tbody id="riskBody"></tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+// === DATA ===
+const hireData = [
+  {name:"俞致远",grade:"20",seq:"研发序列",dept2:"数据算法部",dept3:"业务算法部",date:"04-20"},
+  {name:"于吉士",grade:"18",seq:"研发序列",dept2:"国际互联网部",dept3:"研发中心",date:"04-14"},
+  {name:"胡昌俊",grade:"18",seq:"产品序列",dept2:"应用生态部（南京）",dept3:"联盟业务部",date:"04-09"},
+  {name:"郑平",grade:"18",seq:"研发序列",dept2:"商业平台部",dept3:"-",date:"04-24"},
+  {name:"Сарибекян Артем",grade:"17",seq:"销售序列",dept2:"国际互联网部",dept3:"国际商业营销",date:"04-28"},
+  {name:"毕文娟",grade:"17",seq:"销售序列",dept2:"商务合作部",dept3:"多媒体内容组",date:"04-16"},
+  {name:"史金雨",grade:"17",seq:"销售序列",dept2:"商业营销部",dept3:"效果广告",date:"04-02"},
+  {name:"张冬艳",grade:"17",seq:"产品序列",dept2:"内容生态部（南京）",dept3:"信息流业务",date:"04-14"},
+  {name:"王宁",grade:"17",seq:"研发序列",dept2:"商业平台部",dept3:"基础算法部",date:"04-07"},
+  {name:"李耕旭",grade:"16",seq:"产品序列",dept2:"创新业务部",dept3:"-",date:"04-02"},
+  {name:"谢慧",grade:"16",seq:"产品序列",dept2:"应用生态部（南京）",dept3:"游戏业务部",date:"04-14"},
+  {name:"张钰",grade:"13",seq:"产品序列",dept2:"商业平台部",dept3:"数据与行业业务部",date:"04-21"},
+  {name:"邓梦菊",grade:"13",seq:"研发序列",dept2:"应用生态部（南京）",dept3:"项目管理组",date:"04-23"},
+  {name:"王思宇",grade:"13",seq:"销售序列",dept2:"商务合作部",dept3:"多媒体内容组",date:"04-09"},
+  {name:"王冠匀",grade:"",seq:"产品序列",dept2:"创新业务部",dept3:"-",date:"04-02"},
+  {name:"孙英杰",grade:"",seq:"产品序列",dept2:"数据算法部",dept3:"算法平台部",date:"04-02"},
+  {name:"林芷亦",grade:"",seq:"销售序列",dept2:"商务合作部",dept3:"联盟联运组",date:"04-02"},
+  {name:"蒋梦华",grade:"",seq:"销售序列",dept2:"商务合作部",dept3:"多媒体内容组",date:"04-02"},
+  {name:"刘佳欣",grade:"",seq:"产品序列",dept2:"创新业务部",dept3:"-",date:"04-02"},
+  {name:"黄圣杰",grade:"",seq:"产品序列",dept2:"创新业务部",dept3:"-",date:"04-02"},
+  {name:"邓业会",grade:"",seq:"研发序列",dept2:"测试部",dept3:"电视互联网测试部",date:"04-02"},
+  {name:"陈雨汐",grade:"",seq:"研发序列",dept2:"应用生态部（南京）",dept3:"项目管理组",date:"04-02"},
+  {name:"李年兴",grade:"",seq:"市场公关序列",dept2:"商业营销部",dept3:"品牌广告",date:"04-07"},
+  {name:"李佳敏",grade:"",seq:"市场公关序列",dept2:"商业营销部",dept3:"品牌广告",date:"04-07"},
+  {name:"贺佳",grade:"",seq:"产品序列",dept2:"内容生态部（南京）",dept3:"儿童与教育业务",date:"04-07"},
+  {name:"吴佳颐",grade:"",seq:"研发序列",dept2:"国际互联网部",dept3:"研发中心",date:"04-07"},
+  {name:"夏欣雨",grade:"",seq:"研发序列",dept2:"测试部",dept3:"应用生态测试部",date:"04-09"},
+  {name:"李思靓",grade:"",seq:"产品序列",dept2:"内容生态部（南京）",dept3:"AI应用中心",date:"04-09"},
+  {name:"郭旭珊",grade:"",seq:"产品序列",dept2:"内容生态部（南京）",dept3:"信息流业务",date:"04-09"},
+  {name:"窦新宇",grade:"",seq:"销售序列",dept2:"商业营销部",dept3:"效果广告",date:"04-09"},
+  {name:"陈思明",grade:"",seq:"产品序列",dept2:"国际互联网部",dept3:"作战室",date:"04-09"},
+  {name:"吴轶男",grade:"",seq:"研发序列",dept2:"商业平台部",dept3:"商业架构部",date:"04-14"},
+  {name:"张泽圆",grade:"",seq:"产品序列",dept2:"应用生态部（南京）",dept3:"生态业务部",date:"04-14"},
+  {name:"王佳怡",grade:"",seq:"产品序列",dept2:"内容生态部（南京）",dept3:"AI应用中心",date:"04-14"},
+  {name:"吴陈宇",grade:"",seq:"研发序列",dept2:"数据算法部",dept3:"算法架构部",date:"04-14"},
+  {name:"李红梅",grade:"",seq:"研发序列",dept2:"测试部",dept3:"应用生态测试部",date:"04-14"},
+  {name:"王君阳",grade:"",seq:"研发序列",dept2:"电视与视频业务部",dept3:"研发中心",date:"04-14"},
+  {name:"方珏函",grade:"",seq:"产品序列",dept2:"应用生态部（南京）",dept3:"生态业务部",date:"04-14"},
+  {name:"周嘉辉",grade:"",seq:"设计序列",dept2:"应用生态部（南京）",dept3:"设计平台",date:"04-14"},
+  {name:"张新禹",grade:"",seq:"设计序列",dept2:"应用生态部（南京）",dept3:"设计平台",date:"04-14"},
+  {name:"刘梓婧",grade:"",seq:"销售序列",dept2:"商务合作部",dept3:"国际互联网组",date:"04-14"},
+  {name:"魏天赐",grade:"",seq:"研发序列",dept2:"国际互联网部",dept3:"本地化与内容安全",date:"04-14"},
+  {name:"李郑艳",grade:"",seq:"销售序列",dept2:"商务合作部",dept3:"多媒体内容组",date:"04-14"},
+  {name:"赵思琦",grade:"",seq:"产品序列",dept2:"应用生态部（南京）",dept3:"游戏业务部",date:"04-14"},
+  {name:"苏冬冬",grade:"",seq:"产品序列",dept2:"应用生态部（南京）",dept3:"生态业务部",date:"04-14"},
+  {name:"唐嘉妤",grade:"",seq:"产品序列",dept2:"应用生态部（南京）",dept3:"生态业务部",date:"04-16"},
+  {name:"王成",grade:"",seq:"研发序列",dept2:"内容生态部（南京）",dept3:"研发中心",date:"04-16"},
+  {name:"吴韩颖",grade:"",seq:"产品序列",dept2:"内容生态部（南京）",dept3:"信息流业务",date:"04-16"},
+  {name:"胡琳",grade:"",seq:"产品序列",dept2:"内容生态部（南京）",dept3:"制作与发行业务",date:"04-16"},
+  {name:"张睿",grade:"",seq:"销售序列",dept2:"商业营销部",dept3:"效果广告",date:"04-16"},
+  {name:"方硕",grade:"",seq:"销售序列",dept2:"商务合作部",dept3:"多媒体内容组",date:"04-21"},
+  {name:"吴飞宏",grade:"",seq:"研发序列",dept2:"内容生态部（南京）",dept3:"研发中心",date:"04-21"},
+  {name:"李享",grade:"",seq:"设计序列",dept2:"电视与视频业务部",dept3:"设计中心",date:"04-21"},
+  {name:"江佩珊",grade:"",seq:"职能序列",dept2:"参谋部",dept3:"-",date:"04-23"},
+  {name:"周琳",grade:"",seq:"产品序列",dept2:"内容生态部（南京）",dept3:"信息流业务",date:"04-28"},
+  {name:"王则潼",grade:"",seq:"研发序列",dept2:"数据算法部",dept3:"业务算法部",date:"04-28"}
+];
+
+const riskData = [
+  {name:"凌畅",dept:"海外电视业务",hireDate:"03-10",tmnDate:"05-06",days:57,reason:"个人原因"},
+  {name:"马悦欣",dept:"游戏业务部",hireDate:"02-03",tmnDate:"05-06",days:92,reason:"试用期不通过"},
+  {name:"黄彦溪",dept:"创新业务部",hireDate:"02-03",tmnDate:"05-06",days:92,reason:"试用期不通过"},
+  {name:"肖凡",dept:"国际互联网组",hireDate:"03-12",tmnDate:"04-30",days:49,reason:"试用期不通过"},
+  {name:"刘清晨",dept:"数据与行业业务部",hireDate:"03-19",tmnDate:"04-28",days:40,reason:"试用期不通过"},
+  {name:"黄琪",dept:"生态业务部",hireDate:"02-03",tmnDate:"04-27",days:83,reason:"试用期不通过"},
+  {name:"姜云鹭",dept:"国际商业营销",hireDate:"03-12",tmnDate:"04-24",days:43,reason:"试用期不通过"},
+  {name:"李佳润",dept:"基础算法部",hireDate:"04-02",tmnDate:"04-24",days:22,reason:"试用期不通过"},
+  {name:"刘一燃",dept:"内容与服务",hireDate:"02-03",tmnDate:"04-24",days:80,reason:"个人原因"},
+  {name:"吴英杰",dept:"数据算法（南京）",hireDate:"03-31",tmnDate:"04-23",days:23,reason:"试用期不通过"},
+  {name:"朱媛媛",dept:"AI应用中心",hireDate:"03-12",tmnDate:"04-23",days:42,reason:"试用期不通过"},
+  {name:"刘越",dept:"研发中心",hireDate:"03-24",tmnDate:"04-23",days:30,reason:"试用期不通过"},
+  {name:"赵泽鹏",dept:"研发中心",hireDate:"03-24",tmnDate:"04-22",days:29,reason:"个人原因"},
+  {name:"朱浩永",dept:"基础算法部",hireDate:"04-14",tmnDate:"04-20",days:6,reason:"试用期不通过"},
+  {name:"郭紫煜",dept:"核心应用",hireDate:"02-03",tmnDate:"04-20",days:76,reason:"辞退"},
+  {name:"李筱妍",dept:"商业平台",hireDate:"03-03",tmnDate:"04-16",days:44,reason:"试用期不通过"},
+  {name:"景丹杰",dept:"信息流业务",hireDate:"03-24",tmnDate:"04-14",days:21,reason:"个人原因"},
+  {name:"陈妮",dept:"设计中心",hireDate:"04-07",tmnDate:"04-09",days:2,reason:"其他"},
+  {name:"张天嘉",dept:"多媒体内容组",hireDate:"04-02",tmnDate:"04-07",days:5,reason:"个人原因"},
+  {name:"赵梅竹",dept:"参谋部",hireDate:"03-05",tmnDate:"04-03",days:29,reason:"个人原因"},
+  {name:"崔雨馨",dept:"制作与发行业务",hireDate:"03-17",tmnDate:"04-03",days:17,reason:"合同到期"},
+  {name:"赵永奇",dept:"研发中心",hireDate:"02-03",tmnDate:"04-02",days:58,reason:"主动离职"},
+  {name:"刘尚恩",dept:"研发平台（南京）",hireDate:"03-19",tmnDate:"03-30",days:11,reason:"辞退"},
+  {name:"朱奕洁",dept:"产品规划部",hireDate:"02-03",tmnDate:"03-23",days:48,reason:"主动离职"},
+  {name:"毛嘉昕",dept:"海外电视业务",hireDate:"03-10",tmnDate:"03-23",days:13,reason:"试用期不通过"},
+  {name:"杨塽",dept:"国际商业营销",hireDate:"02-03",tmnDate:"03-19",days:44,reason:"辞退"},
+  {name:"张芷涵",dept:"内容与服务",hireDate:"02-10",tmnDate:"02-27",days:17,reason:"试用期不通过"},
+  {name:"任程庆",dept:"服务业务",hireDate:"02-03",tmnDate:"02-24",days:21,reason:"主动离职"}
+];
+
+const trendData = {months:["2025-11","2025-12","2026-01","2026-02","2026-03","2026-04"],total:[53,35,58,29,93,56],high:[4,3,3,3,2,9]};
+
+// === INIT ===
+window.onload = function() {
+  renderFilters();
+  renderTable(hireData);
+  renderRiskTable();
+  renderTrendChart();
+  renderDeptChart();
+  renderSeqChart();
+  renderReasonChart();
+};
+
+function renderFilters() {
+  const depts = [...new Set(hireData.map(d=>d.dept2))].sort();
+  const seqs = [...new Set(hireData.map(d=>d.seq))].sort();
+  const deptSel = document.getElementById('filterDept');
+  const seqSel = document.getElementById('filterSeq');
+  depts.forEach(d => { const o = document.createElement('option'); o.value=d; o.text=d; deptSel.add(o); });
+  seqs.forEach(s => { const o = document.createElement('option'); o.value=s; o.text=s; seqSel.add(o); });
+}
+
+function renderTable(data) {
+  const tbody = document.getElementById('tableBody');
+  tbody.innerHTML = data.map(d => `<tr>
+    <td>${d.name} ${d.grade && parseInt(d.grade)>=17 ? '<span class="tag-high">高阶</span>' : ''}</td>
+    <td>${d.grade || '-'}</td><td>${d.seq}</td>
+    <td>${d.dept2}</td><td>${d.dept3}</td><td>2026-${d.date}</td>
+  </tr>`).join('');
+}
+
+function renderRiskTable() {
+  const tbody = document.getElementById('riskBody');
+  tbody.innerHTML = riskData.map(d => `<tr>
+    <td>${d.name}</td><td>${d.dept}</td><td>2026-${d.hireDate}</td>
+    <td>2026-${d.tmnDate}</td><td>${d.days}天</td>
+    <td><span class="tag-risk">${d.reason}</span></td>
+  </tr>`).join('');
+}
+
+function filterTable() {
+  const dept = document.getElementById('filterDept').value;
+  const seq = document.getElementById('filterSeq').value;
+  const grade = document.getElementById('filterGrade').value;
+  const search = document.getElementById('searchInput').value.toLowerCase();
+  let filtered = hireData.filter(d => {
+    if (dept && d.dept2 !== dept) return false;
+    if (seq && d.seq !== seq) return false;
+    if (grade === '17+' && !(d.grade && parseInt(d.grade) >= 17)) return false;
+    if (grade === '13-16' && !(d.grade && parseInt(d.grade) >= 13 && parseInt(d.grade) < 17)) return false;
+    if (grade === 'none' && d.grade) return false;
+    if (search && !d.name.toLowerCase().includes(search) && !d.dept2.toLowerCase().includes(search) && !d.dept3.toLowerCase().includes(search)) return false;
+    return true;
+  });
+  renderTable(filtered);
+}
+
+let sortDir = 1;
+function sortTable(col) {
+  const keys = ['name','grade','seq','dept2','dept3','date'];
+  const key = keys[col];
+  hireData.sort((a,b) => {
+    let va = a[key] || '', vb = b[key] || '';
+    if (key === 'grade') { va = parseInt(va)||0; vb = parseInt(vb)||0; }
+    return va > vb ? sortDir : va < vb ? -sortDir : 0;
+  });
+  sortDir *= -1;
+  filterTable();
+}
+
+function renderTrendChart() {
+  const chart = echarts.init(document.getElementById('trendChart'));
+  chart.setOption({
+    tooltip: {trigger:'axis'},
+    legend: {data:['入职总数','高阶(17+)'], top: 0},
+    grid: {top:40, bottom:30, left:50, right:20},
+    xAxis: {type:'category', data: trendData.months},
+    yAxis: [{type:'value',name:'人数'}],
+    series: [
+      {name:'入职总数', type:'bar', data:trendData.total, itemStyle:{color:'#FF6900'}},
+      {name:'高阶(17+)', type:'line', data:trendData.high, itemStyle:{color:'#2D5BFF'}, lineStyle:{width:2}}
+    ]
+  });
+  window.addEventListener('resize', () => chart.resize());
+}
+
+function renderDeptChart() {
+  const chart = echarts.init(document.getElementById('deptChart'));
+  const deptCount = {};
+  hireData.forEach(d => { deptCount[d.dept2] = (deptCount[d.dept2]||0) + 1; });
+  const pieData = Object.entries(deptCount).map(([name,value])=>({name,value})).sort((a,b)=>b.value-a.value);
+  chart.setOption({
+    tooltip: {trigger:'item', formatter:'{b}: {c}人 ({d}%)'},
+    series: [{type:'pie', radius:['35%','65%'], data:pieData, label:{fontSize:11}, itemStyle:{borderRadius:4}}]
+  });
+  window.addEventListener('resize', () => chart.resize());
+}
+
+function renderSeqChart() {
+  const chart = echarts.init(document.getElementById('seqChart'));
+  const seqCount = {};
+  hireData.forEach(d => { seqCount[d.seq] = (seqCount[d.seq]||0) + 1; });
+  const data = Object.entries(seqCount).sort((a,b)=>b[1]-a[1]);
+  chart.setOption({
+    tooltip: {},
+    grid: {top:10, bottom:30, left:100, right:30},
+    xAxis: {type:'value'},
+    yAxis: {type:'category', data:data.map(d=>d[0])},
+    series: [{type:'bar', data:data.map(d=>d[1]), itemStyle:{color:'#FF6900', borderRadius:[0,4,4,0]}}]
+  });
+  window.addEventListener('resize', () => chart.resize());
+}
+
+function renderReasonChart() {
+  const chart = echarts.init(document.getElementById('reasonChart'));
+  chart.setOption({
+    tooltip: {trigger:'item'},
+    series: [{type:'pie', radius:'60%', data:[
+      {value:16, name:'试用期不通过', itemStyle:{color:'#E53E3E'}},
+      {value:6, name:'个人原因', itemStyle:{color:'#FF6900'}},
+      {value:3, name:'主动离职', itemStyle:{color:'#FFA940'}},
+      {value:3, name:'辞退', itemStyle:{color:'#722ED1'}}
+    ], label:{fontSize:12}}]
+  });
+  window.addEventListener('resize', () => chart.resize());
+}
+</script>
+</body>
+</html>
