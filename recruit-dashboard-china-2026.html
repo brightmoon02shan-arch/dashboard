@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2026年中国区招聘分析看板</title>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f5f5; color: #333; }
+.header { background: linear-gradient(135deg, #FF6900, #FF8C33); color: white; padding: 24px 32px; }
+.header h1 { font-size: 22px; font-weight: 600; }
+.header p { font-size: 13px; opacity: 0.85; margin-top: 4px; }
+.container { max-width: 1400px; margin: 0 auto; padding: 20px; }
+.kpi-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 16px; }
+.kpi-card { background: white; border-radius: 8px; padding: 20px; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+.kpi-card .value { font-size: 32px; font-weight: 700; color: #FF6900; }
+.kpi-card .label { font-size: 13px; color: #666; margin-top: 4px; }
+.kpi-card .sub { font-size: 12px; color: #999; margin-top: 2px; }
+.kpi-card.risk .value { color: #E53E3E; }
+.kpi-card.good .value { color: #38A169; }
+.chart-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+.chart-card { background: white; border-radius: 8px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+.chart-card h3 { font-size: 14px; font-weight: 600; margin-bottom: 12px; }
+.chart-full { grid-column: 1 / -1; }
+.table-card { background: white; border-radius: 8px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); margin-bottom: 16px; }
+.table-card h3 { font-size: 14px; font-weight: 600; margin-bottom: 12px; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th { background: #f9f9f9; padding: 10px 12px; text-align: left; font-weight: 600; border-bottom: 2px solid #eee; cursor: pointer; }
+th:hover { background: #f0f0f0; }
+td { padding: 8px 12px; border-bottom: 1px solid #f0f0f0; }
+tr:hover td { background: #fff8f0; }
+.tag-risk { background: #E53E3E; color: white; padding: 2px 8px; border-radius: 10px; font-size: 11px; }
+.tag-good { background: #38A169; color: white; padding: 2px 8px; border-radius: 10px; font-size: 11px; }
+.tag-warn { background: #FFA940; color: white; padding: 2px 8px; border-radius: 10px; font-size: 11px; }
+@media (max-width: 768px) { .chart-row, .kpi-row { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<div class="header">
+  <h1>📊 2026年中国区招聘分析看板（1-5月）</h1>
+  <p>数据截止：2026-05-08 | 数据来源：人力数仓</p>
+</div>
+<div class="container">
+  <!-- KPI Cards -->
+  <div class="kpi-row">
+    <div class="kpi-card"><div class="value">1,232</div><div class="label">入职总人数</div><div class="sub">1-5月累计</div></div>
+    <div class="kpi-card"><div class="value">61</div><div class="label">高阶人才（17+）</div><div class="sub">占比 5.0%</div></div>
+    <div class="kpi-card good"><div class="value">97.3%</div><div class="label">Offer接受率</div><div class="sub">目标 90%</div></div>
+    <div class="kpi-card risk"><div class="value">21.2%</div><div class="label">试用期流失率</div><div class="sub">434人/2048人</div></div>
+  </div>
+
+  <!-- Charts -->
+  <div class="chart-row">
+    <div class="chart-card"><h3>📈 月度入职趋势</h3><div id="trendChart" style="height:300px"></div></div>
+    <div class="chart-card"><h3>🥧 部门入职分布</h3><div id="deptChart" style="height:300px"></div></div>
+  </div>
+  <div class="chart-row">
+    <div class="chart-card"><h3>⚠️ 试用期流失率TOP10</h3><div id="riskChart" style="height:300px"></div></div>
+    <div class="chart-card"><h3>📊 Offer转化分析</h3><div id="offerChart" style="height:300px"></div></div>
+  </div>
+  <div class="chart-row">
+    <div class="chart-card chart-full"><h3>🔄 招聘漏斗</h3><div id="funnelChart" style="height:350px"></div></div>
+  </div>
+
+  <!-- Detail Table -->
+  <div class="table-card">
+    <h3>📋 部门招聘明细</h3>
+    <table>
+      <thead><tr>
+        <th>部门</th>
+        <th>入职</th>
+        <th>高阶</th>
+        <th>正式</th>
+        <th>外包</th>
+        <th>试用期离职</th>
+        <th>流失率</th>
+      </tr></thead>
+      <tbody>
+        <tr><td>汽车销交服部</td><td>525</td><td>20</td><td>525</td><td>0</td><td>17</td><td><span class="tag-good">2.8%</span></td></tr>
+        <tr><td>服务部</td><td>106</td><td>7</td><td>20</td><td>86</td><td>63</td><td><span class="tag-risk">26.5%</span></td></tr>
+        <tr><td>江苏分公司</td><td>73</td><td>0</td><td>46</td><td>27</td><td>71</td><td><span class="tag-risk">43.3%</span></td></tr>
+        <tr><td>山东分公司</td><td>50</td><td>6</td><td>24</td><td>26</td><td>81</td><td><span class="tag-risk">60.9%</span></td></tr>
+        <tr><td>上海分公司</td><td>37</td><td>0</td><td>26</td><td>11</td><td>10</td><td><span class="tag-warn">17.5%</span></td></tr>
+        <tr><td>江西分公司</td><td>35</td><td>1</td><td>10</td><td>25</td><td>7</td><td><span class="tag-warn">14.0%</span></td></tr>
+        <tr><td>湖北分公司</td><td>29</td><td>0</td><td>17</td><td>12</td><td>32</td><td><span class="tag-risk">36.8%</span></td></tr>
+        <tr><td>四川分公司</td><td>27</td><td>0</td><td>13</td><td>14</td><td>4</td><td><span class="tag-good">8.9%</span></td></tr>
+        <tr><td>辽宁分公司</td><td>26</td><td>0</td><td>5</td><td>21</td><td>42</td><td><span class="tag-risk">59.2%</span></td></tr>
+        <tr><td>河北分公司</td><td>25</td><td>0</td><td>6</td><td>19</td><td>16</td><td><span class="tag-warn">34.0%</span></td></tr>
+        <tr><td>广东分公司</td><td>17</td><td>2</td><td>13</td><td>4</td><td>66</td><td><span class="tag-risk">66.0%</span></td></tr>
+        <tr><td>中国区市场部</td><td>18</td><td>7</td><td>18</td><td>0</td><td>8</td><td><span class="tag-warn">16.7%</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+// 月度趋势
+const trendChart = echarts.init(document.getElementById('trendChart'));
+trendChart.setOption({
+  tooltip: {trigger:'axis'},
+  legend: {data:['入职总数','高阶(17+)']},
+  xAxis: {type:'category', data:['2026-01','2026-02','2026-03','2026-04','2026-05']},
+  yAxis: [{type:'value',name:'人数'}],
+  series: [
+    {name:'入职总数', type:'bar', data:[202,178,492,334,26], itemStyle:{color:'#FF6900'}},
+    {name:'高阶(17+)', type:'line', data:[20,8,23,9,1], itemStyle:{color:'#2D5BFF'}}
+  ]
+});
+
+// 部门分布
+const deptChart = echarts.init(document.getElementById('deptChart'));
+deptChart.setOption({
+  tooltip: {trigger:'item', formatter:'{b}: {c}人 ({d}%)'},
+  series: [{type:'pie', radius:['35%','65%'], data:[
+    {value:525, name:'汽车销交服部'},
+    {value:106, name:'服务部'},
+    {value:73, name:'江苏分公司'},
+    {value:50, name:'山东分公司'},
+    {value:37, name:'上海分公司'},
+    {value:35, name:'江西分公司'},
+    {value:29, name:'湖北分公司'},
+    {value:27, name:'四川分公司'},
+    {value:208, name:'其他'}
+  ], label:{fontSize:11}}]
+});
+
+// 流失率TOP10
+const riskChart = echarts.init(document.getElementById('riskChart'));
+riskChart.setOption({
+  tooltip: {trigger:'axis', axisPointer:{type:'shadow'}},
+  grid: {left:'25%'},
+  xAxis: {type:'value', max:100, axisLabel:{formatter:'{value}%'}},
+  yAxis: {type:'category', data:['四川','汽车销交服','江西','上海','中国区市场','陕西','湖北','服务部','河北','辽宁','江苏','浙江','福建','山东','广东'].reverse()},
+  series: [{type:'bar', data:[8.9,2.8,14.0,17.5,16.7,31.0,36.8,26.5,34.0,59.2,43.3,52.1,51.4,60.9,66.0].reverse(), itemStyle:{color:function(p){return p.value>40?'#E53E3E':p.value>20?'#FFA940':'#38A169'}}}}]
+});
+
+// Offer转化
+const offerChart = echarts.init(document.getElementById('offerChart'));
+offerChart.setOption({
+  tooltip: {trigger:'axis'},
+  legend: {data:['Offer数','入职数','接受率']},
+  grid: {left:'15%', right:'15%'},
+  xAxis: {type:'category', data:['汽车销交服','作战室','服务部','广东','深圳','河南','京津','江苏','新零售','湖北'], axisLabel:{rotate:30}},
+  yAxis: [{type:'value',name:'人数'}, {type:'value',name:'比率(%)',max:100}],
+  series: [
+    {name:'Offer数', type:'bar', data:[136,39,28,17,16,15,8,8,7,5], itemStyle:{color:'#2D5BFF'}},
+    {name:'入职数', type:'bar', data:[131,39,27,17,16,15,8,8,6,5], itemStyle:{color:'#FF6900'}},
+    {name:'接受率', type:'line', yAxisIndex:1, data:[96.3,100,96.4,100,100,100,100,100,85.7,100], itemStyle:{color:'#38A169'}}
+  ]
+});
+
+// 招聘漏斗
+const funnelChart = echarts.init(document.getElementById('funnelChart'));
+funnelChart.setOption({
+  tooltip: {trigger:'item', formatter:'{b}: {c}'},
+  series: [{
+    type:'funnel', left:'10%', width:'80%', min:0, max:1232,
+    label:{formatter:'{b}\n{c}', fontSize:14},
+    data:[
+      {value:1232, name:'入职', itemStyle:{color:'#FF6900'}},
+      {value:291, name:'Offer接受', itemStyle:{color:'#FFA940'}},
+      {value:299, name:'Offer发出', itemStyle:{color:'#2D5BFF'}},
+      {value:1232, name:'简历筛选', itemStyle:{color:'#722ED1'}}
+    ]
+  }]
+});
+
+window.addEventListener('resize', function() {
+  trendChart.resize();
+  deptChart.resize();
+  riskChart.resize();
+  offerChart.resize();
+  funnelChart.resize();
+});
+</script>
+</body>
+</html>
