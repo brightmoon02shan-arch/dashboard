@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>招聘分析看板 | 2026年中国区</title>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+:root {
+  --primary: #FF6900;
+  --secondary: #2D5BFF;
+  --danger: #E53E3E;
+  --success: #38A169;
+  --warning: #F6AD55;
+  --bg: #F7F8FA;
+  --card-bg: #FFFFFF;
+  --text-primary: #1A202C;
+  --text-secondary: #718096;
+}
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text-primary); padding: 20px; }
+.container { max-width: 1400px; margin: 0 auto; }
+.header { text-align: center; margin-bottom: 24px; }
+.header h1 { font-size: 28px; color: var(--text-primary); margin-bottom: 8px; }
+.header .subtitle { color: var(--text-secondary); font-size: 14px; }
+.kpi-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px; }
+.kpi-card { background: var(--card-bg); border-radius: 12px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); text-align: center; }
+.kpi-card .label { font-size: 13px; color: var(--text-secondary); margin-bottom: 8px; }
+.kpi-card .value { font-size: 32px; font-weight: 700; color: var(--primary); }
+.kpi-card .sub { font-size: 12px; color: var(--text-secondary); margin-top: 4px; }
+.chart-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+.chart-card { background: var(--card-bg); border-radius: 12px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+.chart-card h3 { font-size: 15px; margin-bottom: 12px; color: var(--text-primary); }
+.chart-box { width: 100%; height: 320px; }
+.full-width { grid-column: 1 / -1; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid #EDF2F7; }
+th { background: #F7FAFC; font-weight: 600; color: var(--text-secondary); position: sticky; top: 0; }
+tr:hover td { background: #FFFAF5; }
+.tag-danger { background: #FED7D7; color: #C53030; padding: 2px 8px; border-radius: 4px; font-size: 11px; }
+.tag-warning { background: #FEFCBF; color: #975A16; padding: 2px 8px; border-radius: 4px; font-size: 11px; }
+.tag-success { background: #C6F6D5; color: #276749; padding: 2px 8px; border-radius: 4px; font-size: 11px; }
+.table-wrap { max-height: 400px; overflow-y: auto; }
+@media (max-width: 768px) { .chart-row { grid-template-columns: 1fr; } .kpi-row { grid-template-columns: repeat(2, 1fr); } }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <h1>📊 招聘分析看板 | 2026年中国区</h1>
+    <div class="subtitle">数据周期：2026-01-01 ~ 2026-05-07 | 更新时间：2026-05-08</div>
+  </div>
+
+  <!-- KPI Cards -->
+  <div class="kpi-row">
+    <div class="kpi-card">
+      <div class="label">总入职人数</div>
+      <div class="value">11,994</div>
+      <div class="sub">正式 2,701 | 实习 2,884 | 外包 6,322</div>
+    </div>
+    <div class="kpi-card">
+      <div class="label">正式员工入职</div>
+      <div class="value">2,701</div>
+      <div class="sub">占比 22.5%</div>
+    </div>
+    <div class="kpi-card">
+      <div class="label">新人流失（已离职）</div>
+      <div class="value" style="color:var(--danger)">3,607</div>
+      <div class="sub">流失率 30.1%</div>
+    </div>
+    <div class="kpi-card">
+      <div class="label">月均入职</div>
+      <div class="value">2,925</div>
+      <div class="sub">1-4月均值（5月数据不完整）</div>
+    </div>
+  </div>
+
+  <!-- Charts Row 1 -->
+  <div class="chart-row">
+    <div class="chart-card">
+      <h3>📈 月度入职趋势</h3>
+      <div class="chart-box" id="chart-monthly"></div>
+    </div>
+    <div class="chart-card">
+      <h3>🏢 一级部门入职 Top 10</h3>
+      <div class="chart-box" id="chart-dept1"></div>
+    </div>
+  </div>
+
+  <!-- Charts Row 2 -->
+  <div class="chart-row">
+    <div class="chart-card">
+      <h3>📊 岗位序列分布</h3>
+      <div class="chart-box" id="chart-sequence"></div>
+    </div>
+    <div class="chart-card">
+      <h3>⚠️ 新人流失率（一级部门）</h3>
+      <div class="chart-box" id="chart-turnover"></div>
+    </div>
+  </div>
+
+  <!-- Charts Row 3 -->
+  <div class="chart-row">
+    <div class="chart-card">
+      <h3>🔍 员工类型构成</h3>
+      <div class="chart-box" id="chart-type"></div>
+    </div>
+    <div class="chart-card">
+      <h3>📉 历史入职新人流失率（2025.5-11入职批次）</h3>
+      <div class="chart-box" id="chart-survival"></div>
+    </div>
+  </div>
+
+  <!-- Detail Table -->
+  <div class="chart-row">
+    <div class="chart-card full-width">
+      <h3>📋 二级部门入职明细 Top 30</h3>
+      <div class="table-wrap">
+        <table id="detail-table">
+          <thead>
+            <tr><th>一级部门</th><th>二级部门</th><th>入职总数</th><th>正式</th><th>实习</th><th>派遣</th><th>外包</th></tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// Monthly trend
+const chartMonthly = echarts.init(document.getElementById('chart-monthly'));
+chartMonthly.setOption({
+  tooltip: { trigger: 'axis' },
+  legend: { data: ['总入职', '正式员工', '已离职'], top: 0 },
+  grid: { top: 40, bottom: 30, left: 50, right: 20 },
+  xAxis: { type: 'category', data: ['1月', '2月', '3月', '4月', '5月'] },
+  yAxis: { type: 'value' },
+  series: [
+    { name: '总入职', type: 'bar', data: [3081, 1668, 3797, 3154, 294], itemStyle: { color: '#FF6900' } },
+    { name: '正式员工', type: 'bar', data: [786, 400, 782, 650, 83], itemStyle: { color: '#2D5BFF' } },
+    { name: '已离职', type: 'line', data: [1182, 539, 1205, 672, 9], itemStyle: { color: '#E53E3E' }, lineStyle: { type: 'dashed' } }
+  ]
+});
+
+// Dept1 bar
+const chartDept1 = echarts.init(document.getElementById('chart-dept1'));
+const dept1Data = [
+  { name: '手机部', value: 3655 }, { name: '中国区', value: 2250 }, { name: '汽车部', value: 2244 },
+  { name: '大家电部', value: 1883 }, { name: '国际业务部', value: 448 }, { name: '互联网业务部', value: 328 },
+  { name: '集团技术委', value: 267 }, { name: '财务部', value: 174 }, { name: 'DEP项目组', value: 160 },
+  { name: '生态链', value: 113 }
+];
+chartDept1.setOption({
+  tooltip: { trigger: 'axis' },
+  grid: { top: 10, bottom: 30, left: 100, right: 30 },
+  xAxis: { type: 'value' },
+  yAxis: { type: 'category', data: dept1Data.map(d => d.name).reverse(), axisLabel: { fontSize: 11 } },
+  series: [{ type: 'bar', data: dept1Data.map(d => d.value).reverse(), itemStyle: { color: '#FF6900' }, barWidth: 18 }]
+});
+
+// Sequence pie
+const chartSeq = echarts.init(document.getElementById('chart-sequence'));
+chartSeq.setOption({
+  tooltip: { trigger: 'item', formatter: '{b}: {c} ({d}%)' },
+  legend: { orient: 'vertical', right: 10, top: 20, textStyle: { fontSize: 11 } },
+  series: [{
+    type: 'pie', radius: ['35%', '65%'], center: ['35%', '50%'],
+    label: { show: false },
+    data: [
+      { value: 5355, name: '生产制造', itemStyle: { color: '#FF6900' } },
+      { value: 2585, name: '研发', itemStyle: { color: '#2D5BFF' } },
+      { value: 1457, name: '终端', itemStyle: { color: '#38A169' } },
+      { value: 745, name: '销售', itemStyle: { color: '#F6AD55' } },
+      { value: 423, name: '产品', itemStyle: { color: '#9F7AEA' } },
+      { value: 403, name: '交付与服务', itemStyle: { color: '#ED64A6' } },
+      { value: 1026, name: '其他', itemStyle: { color: '#A0AEC0' } }
+    ]
+  }]
+});
+
+// Turnover bar
+const chartTurnover = echarts.init(document.getElementById('chart-turnover'));
+const turnoverData = [
+  { name: '大家电部', rate: 33.7 }, { name: '中国区', rate: 32.3 }, { name: '互联网业务部', rate: 28.0 },
+  { name: '集团技术委', rate: 23.6 }, { name: '公共事务部', rate: 21.7 }, { name: '国际业务部', rate: 21.0 },
+  { name: '财务部', rate: 17.8 }, { name: '生态链', rate: 16.8 }, { name: '人力资源部', rate: 16.3 },
+  { name: '集团信息技术部', rate: 15.0 }, { name: '汽车部', rate: 12.5 }
+];
+chartTurnover.setOption({
+  tooltip: { trigger: 'axis', formatter: '{b}: {c}%' },
+  grid: { top: 10, bottom: 30, left: 110, right: 40 },
+  xAxis: { type: 'value', max: 40, axisLabel: { formatter: '{value}%' } },
+  yAxis: { type: 'category', data: turnoverData.map(d => d.name).reverse(), axisLabel: { fontSize: 11 } },
+  series: [{
+    type: 'bar', data: turnoverData.map(d => d.rate).reverse(), barWidth: 16,
+    itemStyle: { color: (p) => p.value > 30 ? '#E53E3E' : p.value > 20 ? '#F6AD55' : '#38A169' },
+    label: { show: true, position: 'right', formatter: '{c}%', fontSize: 11 }
+  }]
+});
+
+// Type pie
+const chartType = echarts.init(document.getElementById('chart-type'));
+chartType.setOption({
+  tooltip: { trigger: 'item', formatter: '{b}: {c}人 ({d}%)' },
+  series: [{
+    type: 'pie', radius: ['40%', '70%'],
+    label: { formatter: '{b}\n{d}%', fontSize: 12 },
+    data: [
+      { value: 2701, name: '正式员工', itemStyle: { color: '#2D5BFF' } },
+      { value: 2884, name: '实习生', itemStyle: { color: '#38A169' } },
+      { value: 6322, name: '外包', itemStyle: { color: '#F6AD55' } },
+      { value: 16, name: '派遣', itemStyle: { color: '#9F7AEA' } },
+      { value: 71, name: '其他', itemStyle: { color: '#A0AEC0' } }
+    ]
+  }]
+});
+
+// Survival / historical turnover
+const chartSurvival = echarts.init(document.getElementById('chart-survival'));
+const survData = [
+  { name: 'AI实验室', rate: 64.3 }, { name: '服务部', rate: 60.1 }, { name: '商业营销部', rate: 58.8 },
+  { name: '大模型Plus', rate: 58.3 }, { name: '数据部', rate: 55.0 }, { name: 'AI应用中心', rate: 54.2 },
+  { name: '江西分公司', rate: 52.3 }, { name: '广西分公司', rate: 51.1 }, { name: '江苏分公司', rate: 51.1 },
+  { name: '小爱', rate: 49.6 }, { name: '基础技术平台部', rate: 49.0 }
+];
+chartSurvival.setOption({
+  tooltip: { trigger: 'axis', formatter: '{b}: {c}%' },
+  grid: { top: 10, bottom: 30, left: 110, right: 40 },
+  xAxis: { type: 'value', max: 70, axisLabel: { formatter: '{value}%' } },
+  yAxis: { type: 'category', data: survData.map(d => d.name).reverse(), axisLabel: { fontSize: 11 } },
+  series: [{
+    type: 'bar', data: survData.map(d => d.rate).reverse(), barWidth: 16,
+    itemStyle: { color: (p) => p.value > 55 ? '#E53E3E' : p.value > 50 ? '#F6AD55' : '#38A169' },
+    label: { show: true, position: 'right', formatter: '{c}%', fontSize: 11 }
+  }]
+});
+
+// Detail table
+const tableData = [
+  ['手机部','智能制造部',2772,7,2,0,2763],['大家电部','制造部',1817,120,143,0,1554],
+  ['汽车部','生产制造',739,401,30,0,307],['中国区','汽车销交服部',606,525,81,0,0],
+  ['汽车部','自动驾驶与机器人部',509,46,104,0,355],['手机部','新业务部',365,125,45,0,193],
+  ['国际业务部','渠道销售部',294,43,251,0,0],['中国区','服务部',246,20,124,16,86],
+  ['汽车部','体系运营部',190,35,19,0,135],['汽车部','整车工程部',187,53,38,0,93],
+  ['中国区','江苏分公司',164,46,91,0,27],['DEP项目组','—',160,160,0,0,0],
+  ['手机部','硬件工程部',150,50,6,0,94],['手机部','软件部',143,23,64,0,56],
+  ['中国区','山东分公司',133,24,83,0,26],['汽车部','测试验证部',128,32,39,0,56],
+  ['手机部','测试部',125,10,22,0,93],['手机部','可穿戴部',100,3,47,0,49],
+  ['中国区','广东分公司',100,13,83,0,4],['集团技术委员会','小爱',94,2,91,0,1],
+  ['中国区','湖北分公司',87,17,58,0,12],['汽车部','质量部',85,74,11,0,0],
+  ['汽车部','架构部',85,19,44,0,17],['集团技术委员会','基础技术平台部',73,18,44,0,10],
+  ['汽车部','供应链部',71,66,1,0,0],['中国区','辽宁分公司',71,5,45,0,21],
+  ['中国区','陕西分公司',71,12,49,0,10],['汽车部','智能座舱与APP部',68,15,16,0,37],
+  ['财务部','财务运营部',66,5,61,0,0],['汽车部','先进动力部',62,29,13,0,15]
+];
+const tbody = document.querySelector('#detail-table tbody');
+tableData.forEach(r => {
+  const tr = document.createElement('tr');
+  tr.innerHTML = `<td>${r[0]}</td><td>${r[1]}</td><td><strong>${r[2]}</strong></td><td>${r[3]}</td><td>${r[4]}</td><td>${r[5]}</td><td>${r[6]}</td>`;
+  tbody.appendChild(tr);
+});
+
+// Responsive
+window.addEventListener('resize', () => {
+  [chartMonthly, chartDept1, chartSeq, chartTurnover, chartType, chartSurvival].forEach(c => c.resize());
+});
+</script>
+</body>
+</html>
