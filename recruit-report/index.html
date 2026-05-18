@@ -65,7 +65,7 @@ tr:hover td{background:#FFF8F0}
 <div class="container">
   <div class="tabs">
     <button class="tab-btn active" onclick="switchTab('tab-progress',this)">📈 招聘进展</button>
-    <button class="tab-btn" onclick="switchTab('tab-funnel',this)">🔄 Offer分析</button>
+    <button class="tab-btn" onclick="switchTab('tab-funnel',this)">🔄 漏斗健康度</button>
     <button class="tab-btn" onclick="switchTab('tab-quality',this)">👥 新人质量</button>
   </div>
 
@@ -110,38 +110,44 @@ tr:hover td{background:#FFF8F0}
     </div>
   </div>
 
-  <!-- Tab 2: Offer分析 -->
+  <!-- Tab 2: 漏斗健康度 -->
   <div id="tab-funnel" class="tab-content">
     <div class="kpi-row">
-      <div class="kpi-card"><div class="value">8</div><div class="label">本月Offer数</div><div class="sub">2026-05-01 ~ 05-17</div></div>
-      <div class="kpi-card"><div class="value">7</div><div class="label">已入职</div><div class="sub">待入职1人</div></div>
-      <div class="kpi-card"><div class="value">100%</div><div class="label">Offer接受率</div><div class="trend up">✅ 全部接受</div></div>
-      <div class="kpi-card"><div class="value">0.7天</div><div class="label">平均Offer→入职天数</div><div class="trend up">✅ 极速入职</div></div>
+      <div class="kpi-card"><div class="value">10,993</div><div class="label">简历投递</div><div class="sub">5/11-5/17 增量</div></div>
+      <div class="kpi-card"><div class="value">25.0%</div><div class="label">简历→面试</div><div class="trend up">✅ 达标</div></div>
+      <div class="kpi-card"><div class="value">1.2%</div><div class="label">面试→Offer</div><div class="trend down">🔴 远低于基准</div></div>
+      <div class="kpi-card"><div class="value">96.6%</div><div class="label">Offer接受率</div><div class="trend up">✅ 达标</div></div>
     </div>
     <div class="chart-row">
-      <div class="chart-card"><h3>📊 各部门Offer分布</h3><div id="offerDeptChart" style="height:350px"></div></div>
-      <div class="chart-card"><h3>📊 Offer→入职天数</h3><div id="offerCycleChart" style="height:350px"></div></div>
+      <div class="chart-card"><h3>🔻 招聘漏斗</h3><div id="funnelChart" style="height:350px"></div></div>
+      <div class="chart-card"><h3>📊 各部门简历投递</h3><div id="resumeDeptChart" style="height:350px"></div></div>
     </div>
     <div class="chart-row">
       <div class="chart-card chart-full">
-        <h3>📋 各部门Offer明细</h3>
+        <h3>📋 各部门漏斗明细（5/11-5/17 增量）</h3>
         <table>
-          <thead><tr><th>二级部门</th><th>Offer数</th><th>已入职</th><th>Offer接受率</th><th>平均入职天数</th></tr></thead>
+          <thead><tr><th>二级部门</th><th>简历</th><th>面试</th><th>Offer</th><th>入职</th><th>简历→面试</th><th>面试→Offer</th><th>Offer接受率</th><th>端到端</th></tr></thead>
           <tbody>
-            <tr><td>战略规划与运营部</td><td>2</td><td>2</td><td>100.0%</td><td>0.0</td></tr>
-            <tr><td>国际销服数字化部</td><td>1</td><td>1</td><td>100.0%</td><td>1.0</td></tr>
-            <tr><td>数据部</td><td>1</td><td>1</td><td>100.0%</td><td>2.0</td></tr>
-            <tr><td>交付履约部</td><td>1</td><td>1</td><td>100.0%</td><td>0.0</td></tr>
-            <tr><td>企业智能协同部</td><td>1</td><td>1</td><td>100.0%</td><td>1.0</td></tr>
-            <tr><td>汽车销交服数字化部</td><td>1</td><td>1</td><td>100.0%</td><td>0.0</td></tr>
-            <tr><td>AI应用中心</td><td>1</td><td>1</td><td>100.0%</td><td>2.0</td></tr>
-            <tr style="font-weight:bold;background:#F7F8FA"><td>合计</td><td>8</td><td>7</td><td>100.0%</td><td>0.7</td></tr>
+            <tr><td>战略规划与运营部</td><td>10,010</td><td>2,505</td><td>29</td><td>28</td><td>25.0%</td><td>1.2%</td><td>96.6%</td><td>0.3%</td></tr>
+            <tr><td>企业智能协同部</td><td>268</td><td>64</td><td>1</td><td>1</td><td>23.9%</td><td>1.6%</td><td>100.0%</td><td>0.4%</td></tr>
+            <tr><td>国际销服数字化部</td><td>157</td><td>8</td><td>0</td><td>0</td><td>5.1%</td><td>-</td><td>-</td><td>0.0%</td></tr>
+            <tr><td>研产供数字化部</td><td>125</td><td>20</td><td>0</td><td>0</td><td>16.0%</td><td>-</td><td>-</td><td>0.0%</td></tr>
+            <tr><td>服务研发部</td><td>104</td><td>35</td><td>0</td><td>0</td><td>33.7%</td><td>-</td><td>-</td><td>0.0%</td></tr>
+            <tr><td>交付履约部</td><td>79</td><td>0</td><td>1</td><td>1</td><td>0.0%</td><td>-</td><td>100.0%</td><td>1.3%</td></tr>
+            <tr><td>AI应用中心</td><td>54</td><td>6</td><td>1</td><td>0</td><td>11.1%</td><td>16.7%</td><td>0.0%</td><td>0.0%</td></tr>
+            <tr><td>财经数字化部</td><td>43</td><td>0</td><td>0</td><td>0</td><td>0.0%</td><td>-</td><td>-</td><td>0.0%</td></tr>
+            <tr><td>中国区销服数字化部</td><td>29</td><td>0</td><td>0</td><td>0</td><td>0.0%</td><td>-</td><td>-</td><td>0.0%</td></tr>
+            <tr><td>数据部</td><td>27</td><td>12</td><td>1</td><td>1</td><td>44.4%</td><td>8.3%</td><td>100.0%</td><td>3.7%</td></tr>
+            <tr><td>技术发展与质量管理部</td><td>12</td><td>6</td><td>0</td><td>0</td><td>50.0%</td><td>-</td><td>-</td><td>0.0%</td></tr>
+            <tr><td>汽车销交服数字化部</td><td>7</td><td>3</td><td>0</td><td>0</td><td>42.9%</td><td>-</td><td>-</td><td>0.0%</td></tr>
+            <tr><td>零售研发部</td><td>2</td><td>0</td><td>0</td><td>0</td><td>0.0%</td><td>-</td><td>-</td><td>0.0%</td></tr>
+            <tr style="font-weight:bold;background:#F7F8FA"><td>合计</td><td>10,993</td><td>2,764</td><td>33</td><td>31</td><td>25.0%</td><td>1.2%</td><td>96.6%</td><td>0.3%</td></tr>
           </tbody>
         </table>
       </div>
     </div>
     <div class="insight-box">
-      <strong>💡 关键发现：</strong> 本月Offer接受率100%，所有候选人全部接受Offer。平均Offer→入职仅0.7天，入职效率极高。但本月Offer量仅8个，整体招聘节奏偏慢，需关注是否有HC冻结或需求延迟的情况。
+      <strong>💡 关键发现：</strong> 面试→Offer转化率仅1.2%（基准30-50%），是漏斗最大瓶颈。简历→面试转化率25.0%达标，Offer接受率96.6%优秀。建议复盘面试标准是否过严，或确认HC是否充足。
     </div>
   </div>
 
@@ -231,22 +237,27 @@ statusChart.setOption({
 });
 
 // Tab 2 Charts
-var offerChart=echarts.init(document.getElementById('offerDeptChart'));
-offerChart.setOption({
+var funnelChart=echarts.init(document.getElementById('funnelChart'));
+funnelChart.setOption({
+  tooltip:{trigger:'item',formatter:'{b}: {c}'},
+  series:[{type:'funnel',left:'10%',width:'80%',min:0,max:10993,
+    label:{formatter:'{b}\n{c}',fontSize:13},
+    data:[
+      {name:'简历',value:10993,itemStyle:{color:'#FF6900'}},
+      {name:'面试',value:2764,itemStyle:{color:'#2D5BFF'}},
+      {name:'Offer',value:33,itemStyle:{color:'#F6AD55'}},
+      {name:'入职',value:31,itemStyle:{color:'#38A169'}}
+    ],
+    itemStyle:{borderRadius:4}}]
+});
+
+var resumeChart=echarts.init(document.getElementById('resumeDeptChart'));
+resumeChart.setOption({
   tooltip:{trigger:'axis',axisPointer:{type:'shadow'}},
   grid:{top:10,bottom:30,left:140,right:40},
   xAxis:{type:'value'},
-  yAxis:{type:'category',data:['AI应用中心','汽车销交服数字化部','企业智能协同部','交付履约部','数据部','国际销服数字化部','战略规划与运营部'],axisLabel:{fontSize:11}},
-  series:[{type:'bar',data:[1,1,1,1,1,1,2],barWidth:16,itemStyle:{color:'#2D5BFF',borderRadius:[0,4,4,0]},label:{show:true,position:'right',fontSize:11}}]
-});
-
-var cycleChart=echarts.init(document.getElementById('offerCycleChart'));
-cycleChart.setOption({
-  tooltip:{trigger:'axis',axisPointer:{type:'shadow'}},
-  grid:{top:10,bottom:30,left:140,right:40},
-  xAxis:{type:'value',name:'天数'},
-  yAxis:{type:'category',data:['交付履约部','汽车销交服数字化部','战略规划与运营部','国际销服数字化部','企业智能协同部','数据部','AI应用中心'],axisLabel:{fontSize:11}},
-  series:[{type:'bar',data:[0,0,0,1,1,2,2],barWidth:16,itemStyle:{color:'#38A169',borderRadius:[0,4,4,0]},label:{show:true,position:'right',formatter:'{c}天',fontSize:11}}]
+  yAxis:{type:'category',data:['零售研发部','汽车销交服数字化部','技术发展与质量管理部','数据部','中国区销服数字化部','财经数字化部','AI应用中心','交付履约部','服务研发部','研产供数字化部','国际销服数字化部','企业智能协同部','战略规划与运营部'],axisLabel:{fontSize:11}},
+  series:[{type:'bar',data:[2,7,12,27,29,43,54,79,104,125,157,268,10010],barWidth:16,itemStyle:{color:'#2D5BFF',borderRadius:[0,4,4,0]},label:{show:true,position:'right',fontSize:11}}]
 });
 
 // Tab 3 Charts
@@ -298,7 +309,7 @@ turnChart.setOption({
   markLine:{data:[{xAxis:20,lineStyle:{color:'#38A169',type:'dashed'},label:{formatter:'基准20%'}}]}
 });
 
-window.addEventListener('resize',()=>{[fillChart,statusChart,offerChart,cycleChart,probChart,turnChart].forEach(c=>c.resize())});
+window.addEventListener('resize',()=>{[fillChart,statusChart,funnelChart,resumeChart,probChart,turnChart].forEach(c=>c.resize())});
 </script>
 </body>
 </html>
