@@ -3,291 +3,302 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>招聘分析看板 | 集团信息技术部 | 2026年5月</title>
+<title>招聘分析看板 | 集团信息技术部 | 2026年05月</title>
 <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
 <style>
-:root{--primary:#FF6900;--secondary:#2D5BFF;--danger:#E53E3E;--success:#38A169;--warning:#F6AD55;--bg:#F7F8FA;--card-bg:#FFF;--text-primary:#1A202C;--text-secondary:#718096}
 *{margin:0;padding:0;box-sizing:border-box}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Hiragino Sans GB','Microsoft YaHei',sans-serif;background:var(--bg);color:var(--text-primary);max-width:1440px;margin:0 auto;padding:20px}
-.header{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px}
-.header h1{font-size:24px;font-weight:700}
-.header h1 span{color:var(--primary)}
-.header .meta{color:var(--text-secondary);font-size:14px}
-.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:24px}
-.kpi-card{background:var(--card-bg);border-radius:12px;padding:20px;box-shadow:0 1px 3px rgba(0,0,0,.08)}
-.kpi-card .label{font-size:13px;color:var(--text-secondary);margin-bottom:8px}
-.kpi-card .value{font-size:32px;font-weight:700}
-.kpi-card .sub{font-size:13px;margin-top:4px}
-.kpi-card .sub.up{color:var(--success)}
-.kpi-card .sub.down{color:var(--danger)}
-.kpi-card .sub.warn{color:var(--warning)}
-.chart-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px}
-@media(max-width:900px){.chart-grid{grid-template-columns:1fr}}
-.chart-card{background:var(--card-bg);border-radius:12px;padding:20px;box-shadow:0 1px 3px rgba(0,0,0,.08)}
-.chart-card h3{font-size:15px;font-weight:600;margin-bottom:16px;color:var(--text-primary)}
-.chart-box{width:100%;height:340px}
-.section-title{font-size:18px;font-weight:700;margin:32px 0 16px;padding-left:12px;border-left:4px solid var(--primary)}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#F7F8FA;color:#1A202C}
+.header{background:linear-gradient(135deg,#FF6900,#FF8C33);color:white;padding:24px 32px;display:flex;justify-content:space-between;align-items:center}
+.header h1{font-size:22px;font-weight:600}
+.header p{font-size:13px;opacity:.85;margin-top:4px}
+.header-actions{display:flex;gap:8px}
+.header-actions button{background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.3);color:white;padding:6px 14px;border-radius:6px;font-size:12px;cursor:pointer}
+.header-actions button:hover{background:rgba(255,255,255,.3)}
+.container{max-width:1400px;margin:0 auto;padding:20px}
+.filters{background:white;border-radius:12px;padding:16px 20px;margin-bottom:16px;display:flex;gap:16px;flex-wrap:wrap;align-items:center;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.filters label{font-size:12px;color:#718096;display:block;margin-bottom:4px}
+.filters select{padding:6px 12px;border:1px solid #E2E8F0;border-radius:6px;font-size:13px;background:white}
+.tabs{display:flex;gap:4px;margin-bottom:16px;background:white;border-radius:12px;padding:4px;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.tab-btn{flex:1;padding:12px 16px;border:none;background:transparent;font-size:14px;font-weight:500;color:#718096;cursor:pointer;border-radius:8px;transition:all .2s}
+.tab-btn.active{background:#FF6900;color:white}
+.tab-btn:hover:not(.active){background:#FFF5EB;color:#FF6900}
+.tab-content{display:none}.tab-content.active{display:block}
+.kpi-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:16px}
+.kpi-card{background:white;border-radius:12px;padding:20px;text-align:center;box-shadow:0 1px 3px rgba(0,0,0,.08);transition:transform .2s}
+.kpi-card:hover{transform:translateY(-2px);box-shadow:0 4px 12px rgba(0,0,0,.12)}
+.kpi-card .value{font-size:32px;font-weight:700;color:#FF6900}
+.kpi-card .label{font-size:13px;color:#718096;margin-top:4px}
+.kpi-card .sub{font-size:12px;color:#A0AEC0;margin-top:2px}
+.kpi-card .trend{font-size:12px;margin-top:4px;font-weight:500}
+.trend.up{color:#38A169}.trend.down{color:#E53E3E}.trend.warn{color:#F6AD55}
+.chart-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+.chart-card{background:white;border-radius:12px;padding:20px;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.chart-card h3{font-size:14px;font-weight:600;margin-bottom:12px;color:#1A202C}
+.chart-full{grid-column:1/-1}
+.table-card{background:white;border-radius:12px;padding:20px;box-shadow:0 1px 3px rgba(0,0,0,.08);margin-bottom:16px}
+.table-card h3{font-size:14px;font-weight:600;margin-bottom:12px}
 table{width:100%;border-collapse:collapse;font-size:13px}
-th,td{padding:10px 12px;text-align:left;border-bottom:1px solid #E2E8F0}
-th{background:#F7F8FA;font-weight:600;color:var(--text-secondary);position:sticky;top:0}
-td.num{text-align:right}
-.badge{display:inline-block;padding:2px 8px;border-radius:4px;font-size:12px;font-weight:600}
-.badge-danger{background:#FED7D7;color:#C53030}
-.badge-warning{background:#FEFCBF;color:#975A16}
-.badge-success{background:#C6F6D5;color:#276749}
-.footer{text-align:center;color:var(--text-secondary);font-size:12px;margin-top:40px;padding:20px}
+th{background:#F7F8FA;padding:10px 12px;text-align:left;font-weight:600;border-bottom:2px solid #E2E8F0;cursor:pointer;white-space:nowrap}
+th:hover{background:#EDF2F7}
+td{padding:10px 12px;border-bottom:1px solid #F0F0F0}
+tr:hover td{background:#FFF8F0}
+.tag{padding:2px 8px;border-radius:10px;font-size:11px;font-weight:500}
+.tag-normal{background:#F0FFF4;color:#38A169}
+.tag-slow{background:#FFFBEB;color:#D69E2E}
+.tag-over{background:#FFF5F5;color:#E53E3E}
+.insight-box{background:#FFF8F0;border-left:4px solid #FF6900;padding:12px 16px;margin:12px 0;border-radius:0 8px 8px 0;font-size:13px;line-height:1.6}
+.insight-box strong{color:#FF6900}
+@media(max-width:768px){.chart-row{grid-template-columns:1fr}.kpi-row{grid-template-columns:1fr 1fr}.tabs{flex-direction:column}.header{flex-direction:column;gap:12px}}
 </style>
 </head>
 <body>
-
 <div class="header">
-  <h1>📊 招聘分析看板 | <span>集团信息技术部</span></h1>
-  <div class="meta">数据截止：2026-05-17 | 分析周期：2026年5月（截至17日）</div>
-</div>
-
-<!-- KPI 卡片 -->
-<div class="kpi-grid">
-  <div class="kpi-card">
-    <div class="label">本月入职</div>
-    <div class="value">4</div>
-    <div class="sub">正式 4 人 · 高招 0 人</div>
+  <div>
+    <h1>📊 招聘分析看板 | 集团信息技术部</h1>
+    <p>数据截止：2026-05-17 | 分析周期：2026-05-01 ~ 2026-05-17 | 生成时间：2026-05-18</p>
   </div>
-  <div class="kpi-card">
-    <div class="label">预算满编率</div>
-    <div class="value">91.0%</div>
-    <div class="sub down">待招 157 人</div>
-  </div>
-  <div class="kpi-card">
-    <div class="label">Offer 接受率</div>
-    <div class="value">98.5%</div>
-    <div class="sub up">65/66 接受</div>
-  </div>
-  <div class="kpi-card">
-    <div class="label">端到端转化率</div>
-    <div class="value">0.3%</div>
-    <div class="sub down">简历→入职 仅3人</div>
-  </div>
-  <div class="kpi-card">
-    <div class="label">试用期转正率</div>
-    <div class="value">75.8%</div>
-    <div class="sub down">241/318 留存</div>
-  </div>
-  <div class="kpi-card">
-    <div class="label">一年内流失率</div>
-    <div class="value">38.7%</div>
-    <div class="sub down">123/318 离职 ⚠️</div>
+  <div class="header-actions">
+    <button onclick="window.print()">🖨️ 打印</button>
   </div>
 </div>
 
-<!-- 图表区 -->
-<div class="section-title">一、招聘进展</div>
-<div class="chart-grid">
-  <div class="chart-card">
-    <h3>各部门满编率</h3>
-    <div class="chart-box" id="chart-fill-rate"></div>
+<div class="container">
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('tab-progress',this)">📈 招聘进展</button>
+    <button class="tab-btn" onclick="switchTab('tab-funnel',this)">🔄 Offer分析</button>
+    <button class="tab-btn" onclick="switchTab('tab-quality',this)">👥 新人质量</button>
   </div>
-  <div class="chart-card">
-    <h3>各部门 HC 结构（预算/在职/在途/待招）</h3>
-    <div class="chart-box" id="chart-hc-structure"></div>
-  </div>
-</div>
 
-<div class="section-title">二、招聘漏斗</div>
-<div class="chart-grid">
-  <div class="chart-card">
-    <h3>整体招聘漏斗</h3>
-    <div class="chart-box" id="chart-funnel"></div>
+  <!-- Tab 1: 招聘进展 -->
+  <div id="tab-progress" class="tab-content active">
+    <div class="kpi-row">
+      <div class="kpi-card"><div class="value">1,575</div><div class="label">预算HC</div><div class="sub">正式员工编制</div></div>
+      <div class="kpi-card"><div class="value">1,347</div><div class="label">在职人数</div><div class="sub">正式员工</div></div>
+      <div class="kpi-card"><div class="value">88.5%</div><div class="label">满编率</div><div class="trend warn">⚠️ 含在途</div></div>
+      <div class="kpi-card"><div class="value">4</div><div class="label">本月入职</div><div class="sub">正式4 / 实习0 / 外包0</div></div>
+    </div>
+    <div class="chart-row">
+      <div class="chart-card"><h3>📊 各部门满编率</h3><div id="fillRateChart" style="height:400px"></div></div>
+      <div class="chart-card"><h3>🥧 招聘进展状态</h3><div id="statusChart" style="height:400px"></div></div>
+    </div>
+    <div class="chart-row">
+      <div class="chart-card chart-full">
+        <h3>📋 各部门招聘进展明细</h3>
+        <table>
+          <thead><tr><th>二级部门</th><th>预算HC</th><th>在职</th><th>在途</th><th>待招</th><th>满编率</th><th>状态</th></tr></thead>
+          <tbody>
+            <tr><td>零售研发部</td><td>362</td><td>348</td><td>26</td><td>-12</td><td>103.3%</td><td><span class="tag tag-over">超编</span></td></tr>
+            <tr><td>研产供数字化部</td><td>197</td><td>175</td><td>0</td><td>22</td><td>88.8%</td><td><span class="tag tag-normal">正常</span></td></tr>
+            <tr><td>服务研发部</td><td>158</td><td>130</td><td>6</td><td>22</td><td>86.1%</td><td><span class="tag tag-normal">正常</span></td></tr>
+            <tr><td>财经数字化部</td><td>138</td><td>95</td><td>6</td><td>37</td><td>73.2%</td><td><span class="tag tag-slow">缓慢</span></td></tr>
+            <tr><td>数据部</td><td>112</td><td>85</td><td>7</td><td>20</td><td>82.1%</td><td><span class="tag tag-normal">正常</span></td></tr>
+            <tr><td>企业智能协同部</td><td>105</td><td>102</td><td>4</td><td>-1</td><td>101.0%</td><td><span class="tag tag-over">超编</span></td></tr>
+            <tr><td>AI应用中心</td><td>102</td><td>83</td><td>4</td><td>15</td><td>85.3%</td><td><span class="tag tag-normal">正常</span></td></tr>
+            <tr><td>国际销服数字化部</td><td>90</td><td>76</td><td>7</td><td>7</td><td>92.2%</td><td><span class="tag tag-normal">正常</span></td></tr>
+            <tr><td>战略规划与运营部</td><td>89</td><td>76</td><td>1</td><td>12</td><td>86.5%</td><td><span class="tag tag-normal">正常</span></td></tr>
+            <tr><td>交付履约部</td><td>74</td><td>66</td><td>4</td><td>4</td><td>94.6%</td><td><span class="tag tag-normal">正常</span></td></tr>
+            <tr><td>技术发展与质量管理部</td><td>71</td><td>62</td><td>1</td><td>8</td><td>88.7%</td><td><span class="tag tag-normal">正常</span></td></tr>
+            <tr><td>中国区销服数字化部</td><td>59</td><td>62</td><td>3</td><td>-6</td><td>110.2%</td><td><span class="tag tag-over">超编</span></td></tr>
+            <tr><td>汽车销交服数字化部</td><td>57</td><td>50</td><td>2</td><td>5</td><td>91.2%</td><td><span class="tag tag-normal">正常</span></td></tr>
+            <tr style="font-weight:bold;background:#F7F8FA"><td>合计</td><td>1,575</td><td>1,347</td><td>67</td><td>161</td><td>88.5%</td><td>—</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="insight-box">
+      <strong>💡 关键发现：</strong> 零售研发部（103.3%）、企业智能协同部（101.0%）、中国区销服数字化部（110.2%）已超编，合计超编19人。财经数字化部满编率仅73.2%，待招37人，占全部门待招量的23%，需重点推进。
+    </div>
   </div>
-  <div class="chart-card">
-    <h3>各部门 Offer 状况</h3>
-    <div class="chart-box" id="chart-offer"></div>
+
+  <!-- Tab 2: Offer分析 -->
+  <div id="tab-funnel" class="tab-content">
+    <div class="kpi-row">
+      <div class="kpi-card"><div class="value">8</div><div class="label">本月Offer数</div><div class="sub">2026-05-01 ~ 05-17</div></div>
+      <div class="kpi-card"><div class="value">7</div><div class="label">已入职</div><div class="sub">待入职1人</div></div>
+      <div class="kpi-card"><div class="value">100%</div><div class="label">Offer接受率</div><div class="trend up">✅ 全部接受</div></div>
+      <div class="kpi-card"><div class="value">0.7天</div><div class="label">平均Offer→入职天数</div><div class="trend up">✅ 极速入职</div></div>
+    </div>
+    <div class="chart-row">
+      <div class="chart-card"><h3>📊 各部门Offer分布</h3><div id="offerDeptChart" style="height:350px"></div></div>
+      <div class="chart-card"><h3>📊 Offer→入职天数</h3><div id="offerCycleChart" style="height:350px"></div></div>
+    </div>
+    <div class="chart-row">
+      <div class="chart-card chart-full">
+        <h3>📋 各部门Offer明细</h3>
+        <table>
+          <thead><tr><th>二级部门</th><th>Offer数</th><th>已入职</th><th>Offer接受率</th><th>平均入职天数</th></tr></thead>
+          <tbody>
+            <tr><td>战略规划与运营部</td><td>2</td><td>2</td><td>100.0%</td><td>0.0</td></tr>
+            <tr><td>国际销服数字化部</td><td>1</td><td>1</td><td>100.0%</td><td>1.0</td></tr>
+            <tr><td>数据部</td><td>1</td><td>1</td><td>100.0%</td><td>2.0</td></tr>
+            <tr><td>交付履约部</td><td>1</td><td>1</td><td>100.0%</td><td>0.0</td></tr>
+            <tr><td>企业智能协同部</td><td>1</td><td>1</td><td>100.0%</td><td>1.0</td></tr>
+            <tr><td>汽车销交服数字化部</td><td>1</td><td>1</td><td>100.0%</td><td>0.0</td></tr>
+            <tr><td>AI应用中心</td><td>1</td><td>1</td><td>100.0%</td><td>2.0</td></tr>
+            <tr style="font-weight:bold;background:#F7F8FA"><td>合计</td><td>8</td><td>7</td><td>100.0%</td><td>0.7</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="insight-box">
+      <strong>💡 关键发现：</strong> 本月Offer接受率100%，所有候选人全部接受Offer。平均Offer→入职仅0.7天，入职效率极高。但本月Offer量仅8个，整体招聘节奏偏慢，需关注是否有HC冻结或需求延迟的情况。
+    </div>
   </div>
-</div>
 
-<div class="section-title">三、新人质量</div>
-<div class="chart-grid">
-  <div class="chart-card">
-    <h3>试用期转正率 vs 一年内流失率</h3>
-    <div class="chart-box" id="chart-quality"></div>
+  <!-- Tab 3: 新人质量 -->
+  <div id="tab-quality" class="tab-content">
+    <div class="kpi-row">
+      <div class="kpi-card"><div class="value">344</div><div class="label">同期入职总数</div><div class="sub">2025-05 ~ 2025-11 正式员工</div></div>
+      <div class="kpi-card"><div class="value">72.4%</div><div class="label">试用期转正率</div><div class="trend down">🔴 低于90%基准</div></div>
+      <div class="kpi-card"><div class="value">39.2%</div><div class="label">一年内流失率</div><div class="trend down">🔴 远超20%基准</div></div>
+      <div class="kpi-card"><div class="value">132</div><div class="label">一年内离职人数</div><div class="sub">需重点关注</div></div>
+    </div>
+    <div class="chart-row">
+      <div class="chart-card"><h3>📊 各部门试用期转正率</h3><div id="probationChart" style="height:400px"></div></div>
+      <div class="chart-card"><h3>📊 各部门一年内流失率</h3><div id="turnoverChart" style="height:400px"></div></div>
+    </div>
+    <div class="chart-row">
+      <div class="chart-card chart-full">
+        <h3>📋 新人质量明细</h3>
+        <table>
+          <thead><tr><th>二级部门</th><th>同期入职</th><th>试用期留存</th><th>试用期转正率</th><th>一年内离职</th><th>一年内流失率</th></tr></thead>
+          <tbody>
+            <tr><td>零售研发部</td><td>74</td><td>53</td><td>71.6%</td><td>29</td><td>39.2%</td></tr>
+            <tr><td>服务研发部</td><td>43</td><td>32</td><td>74.4%</td><td>15</td><td>34.9%</td></tr>
+            <tr><td>研产供数字化部</td><td>38</td><td>22</td><td>57.9%</td><td>19</td><td>50.0%</td></tr>
+            <tr><td>企业智能协同部</td><td>29</td><td>23</td><td>79.3%</td><td>9</td><td>31.0%</td></tr>
+            <tr><td>AI应用中心</td><td>24</td><td>17</td><td>70.8%</td><td>14</td><td>58.3%</td></tr>
+            <tr><td>中国区销服数字化部</td><td>22</td><td>21</td><td>95.5%</td><td>8</td><td>36.4%</td></tr>
+            <tr><td>数据部</td><td>20</td><td>10</td><td>50.0%</td><td>11</td><td>55.0%</td></tr>
+            <tr><td>财经数字化部</td><td>15</td><td>10</td><td>66.7%</td><td>6</td><td>40.0%</td></tr>
+            <tr><td>技术发展与质量管理部</td><td>15</td><td>11</td><td>73.3%</td><td>7</td><td>46.7%</td></tr>
+            <tr><td>国际销服数字化部</td><td>14</td><td>12</td><td>85.7%</td><td>4</td><td>28.6%</td></tr>
+            <tr><td>战略规划与运营部</td><td>14</td><td>12</td><td>85.7%</td><td>5</td><td>35.7%</td></tr>
+            <tr><td>汽车销交服数字化部</td><td>11</td><td>10</td><td>90.9%</td><td>2</td><td>18.2%</td></tr>
+            <tr><td>交付履约部</td><td>10</td><td>9</td><td>90.0%</td><td>5</td><td>50.0%</td></tr>
+            <tr style="font-weight:bold;background:#F7F8FA"><td>合计</td><td>344</td><td>242</td><td>72.4%</td><td>132</td><td>39.2%</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="insight-box">
+      <strong>💡 关键发现：</strong> 整体试用期转正率仅72.4%，远低于90%基准。数据部（50.0%）、研产供数字化部（57.9%）、AI应用中心（70.8%）表现最差。一年内流失率39.2%，AI应用中心（58.3%）、数据部（55.0%）、交付履约部（50.0%）流失最严重。建议：①加强面试评估标准 ②关注新人融入机制 ③复盘高流失部门的管理方式。
+    </div>
   </div>
-  <div class="chart-card">
-    <h3>新人留存/流失分布</h3>
-    <div class="chart-box" id="chart-retention"></div>
-  </div>
-</div>
-
-<!-- 明细表格 -->
-<div class="section-title">四、各部门招聘明细</div>
-<div class="chart-card" style="overflow-x:auto">
-  <table>
-    <thead>
-      <tr>
-        <th>二级部门</th>
-        <th>预算HC</th>
-        <th>在职</th>
-        <th>在途</th>
-        <th>待招</th>
-        <th>满编率</th>
-        <th>本月入职</th>
-        <th>Offer数</th>
-        <th>Offer接受率</th>
-        <th>试用期转正率</th>
-        <th>一年流失率</th>
-        <th>状态</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr><td>零售研发部</td><td class="num">362</td><td class="num">348</td><td class="num">26</td><td class="num">-12</td><td class="num">103.3%</td><td class="num">0</td><td class="num">29</td><td class="num">96.6%</td><td class="num">71.6%</td><td class="num">39.2%</td><td><span class="badge badge-success">超编</span></td></tr>
-      <tr><td>研产供数字化部</td><td class="num">197</td><td class="num">175</td><td class="num">0</td><td class="num">22</td><td class="num">88.8%</td><td class="num">0</td><td class="num">4</td><td class="num">100%</td><td class="num">57.9%</td><td class="num">50.0%</td><td><span class="badge badge-warning">待招多</span></td></tr>
-      <tr><td>服务研发部</td><td class="num">158</td><td class="num">130</td><td class="num">6</td><td class="num">22</td><td class="num">86.1%</td><td class="num">0</td><td class="num">6</td><td class="num">100%</td><td class="num">74.4%</td><td class="num">34.9%</td><td><span class="badge badge-warning">待招多</span></td></tr>
-      <tr><td>财经数字化部</td><td class="num">138</td><td class="num">95</td><td class="num">6</td><td class="num">37</td><td class="num">73.2%</td><td class="num">0</td><td class="num">7</td><td class="num">100%</td><td class="num">66.7%</td><td class="num">40.0%</td><td><span class="badge badge-danger">缺口大</span></td></tr>
-      <tr><td>数据部</td><td class="num">112</td><td class="num">85</td><td class="num">7</td><td class="num">20</td><td class="num">82.1%</td><td class="num">1</td><td class="num">5</td><td class="num">100%</td><td class="num">50.0%</td><td class="num">55.0%</td><td><span class="badge badge-danger">缺口大</span></td></tr>
-      <tr><td>企业智能协同部</td><td class="num">105</td><td class="num">102</td><td class="num">4</td><td class="num">-1</td><td class="num">101.0%</td><td class="num">1</td><td class="num">7</td><td class="num">100%</td><td class="num">79.3%</td><td class="num">31.0%</td><td><span class="badge badge-success">超编</span></td></tr>
-      <tr><td>AI应用中心</td><td class="num">102</td><td class="num">83</td><td class="num">4</td><td class="num">15</td><td class="num">85.3%</td><td class="num">0</td><td class="num">7</td><td class="num">100%</td><td class="num">70.8%</td><td class="num">58.3%</td><td><span class="badge badge-danger">流失高</span></td></tr>
-      <tr><td>国际销服数字化部</td><td class="num">90</td><td class="num">76</td><td class="num">7</td><td class="num">7</td><td class="num">92.2%</td><td class="num">0</td><td class="num">1</td><td class="num">100%</td><td class="num">85.7%</td><td class="num">28.6%</td><td><span class="badge badge-success">正常</span></td></tr>
-      <tr><td>战略规划与运营部</td><td class="num">89</td><td class="num">76</td><td class="num">1</td><td class="num">12</td><td class="num">86.5%</td><td class="num">1</td><td class="num">3</td><td class="num">100%</td><td class="num">85.7%</td><td class="num">35.7%</td><td><span class="badge badge-warning">待招多</span></td></tr>
-      <tr><td>交付履约部</td><td class="num">74</td><td class="num">66</td><td class="num">4</td><td class="num">4</td><td class="num">94.6%</td><td class="num">0</td><td class="num">5</td><td class="num">100%</td><td class="num">90.0%</td><td class="num">50.0%</td><td><span class="badge badge-warning">流失高</span></td></tr>
-      <tr><td>技术发展与质量管理部</td><td class="num">71</td><td class="num">62</td><td class="num">1</td><td class="num">8</td><td class="num">88.7%</td><td class="num">0</td><td class="num">1</td><td class="num">100%</td><td class="num">73.3%</td><td class="num">46.7%</td><td><span class="badge badge-warning">待招多</span></td></tr>
-      <tr><td>中国区销服数字化部</td><td class="num">59</td><td class="num">62</td><td class="num">3</td><td class="num">-6</td><td class="num">110.2%</td><td class="num">0</td><td class="num">3</td><td class="num">100%</td><td class="num">95.5%</td><td class="num">36.4%</td><td><span class="badge badge-success">超编</span></td></tr>
-      <tr><td>汽车销交服数字化部</td><td class="num">57</td><td class="num">50</td><td class="num">2</td><td class="num">5</td><td class="num">91.2%</td><td class="num">1</td><td class="num">2</td><td class="num">100%</td><td class="num">90.9%</td><td class="num">18.2%</td><td><span class="badge badge-success">正常</span></td></tr>
-    </tbody>
-  </table>
-</div>
-
-<div class="section-title">五、建议</div>
-<div class="chart-card">
-  <ol style="line-height:2;font-size:14px;padding-left:20px">
-    <li><strong>🔴 新人流失严重</strong>：整体一年流失率 38.7%，数据部(55%)、AI应用中心(58.3%)、交付履约部(50%)为重灾区。建议加强面试评估标准、优化新人融入机制。</li>
-    <li><strong>🟡 财经数字化部缺口大</strong>：满编率仅 73.2%，待招 37 人为全部门最多。建议加速招聘节奏或调整 HC 规划。</li>
-    <li><strong>🟢 Offer 接受率优秀</strong>：整体 98.5%，薪酬竞争力和雇主品牌表现良好。</li>
-    <li><strong>🟡 招聘漏斗瓶颈</strong>：一面通过率仅 25.6%（241/943），简历筛选精准度可优化。</li>
-    <li><strong>🔴 研产供数字化部</strong>：试用期转正率仅 57.9%，一年流失率 50%，需重点关注岗位匹配度和团队融入。</li>
-  </ol>
-</div>
-
-<div class="footer">
-  📊 招聘分析看板 · 集团信息技术部 · 2026年5月 · 数据来源：人力数仓
 </div>
 
 <script>
-// 颜色系统
-const colors = {
-  primary: '#FF6900', secondary: '#2D5BFF', danger: '#E53E3E',
-  success: '#38A169', warning: '#F6AD55', gray: '#A0AEC0'
-};
+function switchTab(id,btn){
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  btn.classList.add('active');
+  setTimeout(()=>window.dispatchEvent(new Event('resize')),100);
+}
 
-// 满编率图
-const fillChart = echarts.init(document.getElementById('chart-fill-rate'));
+// Tab 1 Charts
+var fillChart=echarts.init(document.getElementById('fillRateChart'));
 fillChart.setOption({
-  tooltip:{trigger:'axis',axisPointer:{type:'shadow'}},
-  grid:{left:'3%',right:'4%',bottom:'3%',top:'10%',containLabel:true},
+  tooltip:{trigger:'axis',axisPointer:{type:'shadow'},formatter:'{b}: {c}%'},
+  grid:{top:10,bottom:30,left:140,right:40},
   xAxis:{type:'value',max:120,axisLabel:{formatter:'{value}%'}},
-  yAxis:{type:'category',inverse:true,data:['汽车销交服','交付履约','国际销服','零售研发','企业智能协同','中国区销服','战略规划','技术发展','研产供','服务研发','AI应用中心','数据部','财经数字化'].reverse()},
-  series:[{
-    type:'bar',data:[
-      {value:91.2,itemStyle:{color:colors.success}},
-      {value:94.6,itemStyle:{color:colors.success}},
-      {value:92.2,itemStyle:{color:colors.success}},
-      {value:103.3,itemStyle:{color:colors.primary}},
-      {value:101.0,itemStyle:{color:colors.primary}},
-      {value:110.2,itemStyle:{color:colors.primary}},
-      {value:86.5,itemStyle:{color:colors.warning}},
-      {value:88.7,itemStyle:{color:colors.warning}},
-      {value:88.8,itemStyle:{color:colors.warning}},
-      {value:86.1,itemStyle:{color:colors.warning}},
-      {value:85.3,itemStyle:{color:colors.warning}},
-      {value:82.1,itemStyle:{color:colors.danger}},
-      {value:73.2,itemStyle:{color:colors.danger}}
-    ].reverse(),
-    label:{show:true,position:'right',formatter:'{c}%',fontSize:11},
-    barWidth:'60%'
-  }],
-  markLine:{data:[{type:'line',lineStyle:{type:'dashed',color:colors.gray},label:{formatter:'100%'}}]}
+  yAxis:{type:'category',data:['汽车销交服数字化部','交付履约部','国际销服数字化部','技术发展与质量管理部','研产供数字化部','战略规划与运营部','服务研发部','AI应用中心','数据部','企业智能协同部','零售研发部','财经数字化部','中国区销服数字化部'].reverse(),axisLabel:{fontSize:11}},
+  series:[{type:'bar',data:[
+    {value:110.2,itemStyle:{color:'#E53E3E'}},
+    {value:103.3,itemStyle:{color:'#E53E3E'}},
+    {value:101.0,itemStyle:{color:'#E53E3E'}},
+    {value:94.6,itemStyle:{color:'#38A169'}},
+    {value:92.2,itemStyle:{color:'#38A169'}},
+    {value:91.2,itemStyle:{color:'#38A169'}},
+    {value:88.8,itemStyle:{color:'#38A169'}},
+    {value:88.7,itemStyle:{color:'#38A169'}},
+    {value:86.5,itemStyle:{color:'#38A169'}},
+    {value:86.1,itemStyle:{color:'#38A169'}},
+    {value:85.3,itemStyle:{color:'#38A169'}},
+    {value:82.1,itemStyle:{color:'#F6AD55'}},
+    {value:73.2,itemStyle:{color:'#F6AD55'}}
+  ],barWidth:16,itemStyle:{borderRadius:[0,4,4,0]},label:{show:true,position:'right',formatter:'{c}%',fontSize:11}}],
+  markLine:{data:[{xAxis:85,lineStyle:{color:'#38A169',type:'dashed'},label:{formatter:'目标85%'}}]}
 });
 
-// HC 结构图
-const hcChart = echarts.init(document.getElementById('chart-hc-structure'));
-const depts = ['零售研发','研产供','服务研发','财经数字化','数据部','企业智能协同','AI应用中心','国际销服','战略规划','交付履约','技术发展','中国区销服','汽车销交服'];
-hcChart.setOption({
-  tooltip:{trigger:'axis',axisPointer:{type:'shadow'}},
+var statusChart=echarts.init(document.getElementById('statusChart'));
+statusChart.setOption({
+  tooltip:{trigger:'item',formatter:'{b}: {c}个部门 ({d}%)'},
   legend:{bottom:0},
-  grid:{left:'3%',right:'4%',bottom:'12%',top:'5%',containLabel:true},
-  yAxis:{type:'category',data:depts},
-  xAxis:{type:'value'},
-  series:[
-    {name:'在职',type:'bar',stack:'total',data:[348,175,130,95,85,102,83,76,76,66,62,62,50],itemStyle:{color:colors.success}},
-    {name:'在途',type:'bar',stack:'total',data:[26,0,6,6,7,4,4,7,1,4,1,3,2],itemStyle:{color:colors.secondary}},
-    {name:'待招',type:'bar',stack:'total',data:[0,22,22,37,20,0,15,7,12,4,8,0,5],itemStyle:{color:colors.danger}}
-  ]
+  series:[{type:'pie',radius:['40%','65%'],
+    data:[{name:'正常',value:9,itemStyle:{color:'#38A169'}},{name:'缓慢',value:1,itemStyle:{color:'#F6AD55'}},{name:'超编',value:3,itemStyle:{color:'#E53E3E'}}],
+    label:{formatter:'{b}\n{c}个',fontSize:12},itemStyle:{borderRadius:4,borderColor:'#fff',borderWidth:2}}]
 });
 
-// 漏斗图
-const funnelChart = echarts.init(document.getElementById('chart-funnel'));
-funnelChart.setOption({
-  tooltip:{trigger:'item',formatter:'{b}: {c}'},
-  series:[{
-    type:'funnel',left:'10%',top:20,bottom:20,width:'80%',min:0,max:1000,
-    label:{position:'inside',formatter:'{b}\n{c}'},
-    data:[
-      {value:943,name:'一面邀请',itemStyle:{color:'#667eea'}},
-      {value:241,name:'一面通过',itemStyle:{color:'#764ba2'}},
-      {value:61,name:'面试通过',itemStyle:{color:colors.warning}},
-      {value:18,name:'Offer审批',itemStyle:{color:colors.primary}},
-      {value:12,name:'Offer接受',itemStyle:{color:'#f093fb'}},
-      {value:3,name:'入职',itemStyle:{color:colors.success}}
-    ]
-  }]
-});
-
-// Offer 图
-const offerChart = echarts.init(document.getElementById('chart-offer'));
+// Tab 2 Charts
+var offerChart=echarts.init(document.getElementById('offerDeptChart'));
 offerChart.setOption({
   tooltip:{trigger:'axis',axisPointer:{type:'shadow'}},
-  grid:{left:'3%',right:'4%',bottom:'3%',top:'10%',containLabel:true},
+  grid:{top:10,bottom:30,left:140,right:40},
   xAxis:{type:'value'},
-  yAxis:{type:'category',inverse:true,data:['汽车销交服','交付履约','数据部','研产供','国际销服','AI应用','企业智能协同','财经数字化','服务研发','战略规划','中国区销服','技术发展','零售研发']},
-  series:[{
-    type:'bar',data:[2,5,5,4,1,7,7,7,6,3,3,1,29],
-    label:{show:true,position:'right'},
-    itemStyle:{color:colors.secondary},
-    barWidth:'50%'
-  }]
+  yAxis:{type:'category',data:['AI应用中心','汽车销交服数字化部','企业智能协同部','交付履约部','数据部','国际销服数字化部','战略规划与运营部'],axisLabel:{fontSize:11}},
+  series:[{type:'bar',data:[1,1,1,1,1,1,2],barWidth:16,itemStyle:{color:'#2D5BFF',borderRadius:[0,4,4,0]},label:{show:true,position:'right',fontSize:11}}]
 });
 
-// 质量图
-const qualityChart = echarts.init(document.getElementById('chart-quality'));
-const qDepts = ['交付履约','汽车销交服','中国区销服','战略规划','国际销服','企业智能协同','零售研发','技术发展','服务研发','AI应用中心','财经数字化','研产供','数据部'];
-qualityChart.setOption({
-  tooltip:{trigger:'axis'},
-  legend:{bottom:0},
-  grid:{left:'3%',right:'4%',bottom:'12%',top:'5%',containLabel:true},
-  yAxis:{type:'category',data:qDepts},
-  xAxis:{type:'value',max:100,axisLabel:{formatter:'{value}%'}},
-  series:[
-    {name:'试用期转正率',type:'bar',data:[90.0,90.9,95.5,85.7,85.7,79.3,71.6,73.3,74.4,70.8,66.7,57.9,50.0],itemStyle:{color:colors.success},barWidth:'35%',label:{show:true,position:'right',formatter:'{c}%'}},
-    {name:'一年流失率',type:'bar',data:[50.0,18.2,36.4,35.7,28.6,31.0,39.2,46.7,34.9,58.3,40.0,50.0,55.0],itemStyle:{color:colors.danger},barWidth:'35%',label:{show:true,position:'right',formatter:'{c}%'}}
-  ]
+var cycleChart=echarts.init(document.getElementById('offerCycleChart'));
+cycleChart.setOption({
+  tooltip:{trigger:'axis',axisPointer:{type:'shadow'}},
+  grid:{top:10,bottom:30,left:140,right:40},
+  xAxis:{type:'value',name:'天数'},
+  yAxis:{type:'category',data:['交付履约部','汽车销交服数字化部','战略规划与运营部','国际销服数字化部','企业智能协同部','数据部','AI应用中心'],axisLabel:{fontSize:11}},
+  series:[{type:'bar',data:[0,0,0,1,1,2,2],barWidth:16,itemStyle:{color:'#38A169',borderRadius:[0,4,4,0]},label:{show:true,position:'right',formatter:'{c}天',fontSize:11}}]
 });
 
-// 留存/流失饼图
-const retChart = echarts.init(document.getElementById('chart-retention'));
-retChart.setOption({
-  tooltip:{trigger:'item'},
-  legend:{bottom:0},
-  series:[{
-    type:'pie',radius:['40%','70%'],center:['50%','45%'],
-    label:{formatter:'{b}\n{d}%'},
-    data:[
-      {value:195,name:'稳定留存',itemStyle:{color:colors.success}},
-      {value:46,name:'试用期离职',itemStyle:{color:colors.warning}},
-      {value:77,name:'一年后离职',itemStyle:{color:colors.gray}},
-      {value:123,name:'一年内离职',itemStyle:{color:colors.danger}}
-    ]
-  }]
+// Tab 3 Charts
+var probChart=echarts.init(document.getElementById('probationChart'));
+probChart.setOption({
+  tooltip:{trigger:'axis',axisPointer:{type:'shadow'},formatter:'{b}: {c}%'},
+  grid:{top:10,bottom:30,left:140,right:40},
+  xAxis:{type:'value',min:40,max:100,axisLabel:{formatter:'{value}%'}},
+  yAxis:{type:'category',data:['数据部','研产供数字化部','财经数字化部','AI应用中心','零售研发部','技术发展与质量管理部','服务研发部','企业智能协同部','战略规划与运营部','国际销服数字化部','交付履约部','汽车销交服数字化部','中国区销服数字化部'].reverse(),axisLabel:{fontSize:11}},
+  series:[{type:'bar',data:[
+    {value:95.5,itemStyle:{color:'#38A169'}},
+    {value:90.9,itemStyle:{color:'#38A169'}},
+    {value:90.0,itemStyle:{color:'#38A169'}},
+    {value:85.7,itemStyle:{color:'#38A169'}},
+    {value:85.7,itemStyle:{color:'#38A169'}},
+    {value:79.3,itemStyle:{color:'#F6AD55'}},
+    {value:74.4,itemStyle:{color:'#F6AD55'}},
+    {value:73.3,itemStyle:{color:'#F6AD55'}},
+    {value:71.6,itemStyle:{color:'#F6AD55'}},
+    {value:70.8,itemStyle:{color:'#E53E3E'}},
+    {value:66.7,itemStyle:{color:'#E53E3E'}},
+    {value:57.9,itemStyle:{color:'#E53E3E'}},
+    {value:50.0,itemStyle:{color:'#E53E3E'}}
+  ],barWidth:16,itemStyle:{borderRadius:[0,4,4,0]},label:{show:true,position:'right',formatter:'{c}%',fontSize:11}}],
+  markLine:{data:[{xAxis:90,lineStyle:{color:'#38A169',type:'dashed'},label:{formatter:'基准90%'}}]}
 });
 
-// 响应式
-window.addEventListener('resize',()=>{fillChart.resize();hcChart.resize();funnelChart.resize();offerChart.resize();qualityChart.resize();retChart.resize()});
+var turnChart=echarts.init(document.getElementById('turnoverChart'));
+turnChart.setOption({
+  tooltip:{trigger:'axis',axisPointer:{type:'shadow'},formatter:'{b}: {c}%'},
+  grid:{top:10,bottom:30,left:140,right:40},
+  xAxis:{type:'value',max:65,axisLabel:{formatter:'{value}%'}},
+  yAxis:{type:'category',data:['汽车销交服数字化部','国际销服数字化部','企业智能协同部','战略规划与运营部','服务研发部','零售研发部','财经数字化部','中国区销服数字化部','技术发展与质量管理部','研产供数字化部','交付履约部','数据部','AI应用中心'].reverse(),axisLabel:{fontSize:11}},
+  series:[{type:'bar',data:[
+    {value:58.3,itemStyle:{color:'#E53E3E'}},
+    {value:55.0,itemStyle:{color:'#E53E3E'}},
+    {value:50.0,itemStyle:{color:'#E53E3E'}},
+    {value:50.0,itemStyle:{color:'#E53E3E'}},
+    {value:46.7,itemStyle:{color:'#E53E3E'}},
+    {value:40.0,itemStyle:{color:'#E53E3E'}},
+    {value:39.2,itemStyle:{color:'#E53E3E'}},
+    {value:36.4,itemStyle:{color:'#E53E3E'}},
+    {value:35.7,itemStyle:{color:'#E53E3E'}},
+    {value:34.9,itemStyle:{color:'#E53E3E'}},
+    {value:31.0,itemStyle:{color:'#E53E3E'}},
+    {value:28.6,itemStyle:{color:'#F6AD55'}},
+    {value:18.2,itemStyle:{color:'#38A169'}}
+  ],barWidth:16,itemStyle:{borderRadius:[0,4,4,0]},label:{show:true,position:'right',formatter:'{c}%',fontSize:11}}],
+  markLine:{data:[{xAxis:20,lineStyle:{color:'#38A169',type:'dashed'},label:{formatter:'基准20%'}}]}
+});
+
+window.addEventListener('resize',()=>{[fillChart,statusChart,offerChart,cycleChart,probChart,turnChart].forEach(c=>c.resize())});
 </script>
 </body>
 </html>
