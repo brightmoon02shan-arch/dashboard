@@ -62,7 +62,13 @@ tr:hover td{background:#fafbfc}
 <div class="tab-content active" id="tab0">
   <div class="kpi-row">
     <div class="kpi-card">
-      <div class="label">满编率</div>
+      <div class="label">当月滚测HC满编率</div>
+      <div class="value">95.1% <span style="font-size:11px;color:#F6AD55;background:#fff3e0;padding:2px 6px;border-radius:3px">⚠️ 模拟数据</span></div>
+      <div class="sub">在职 1,889 + 在途 108 / 滚测HC 2,099</div>
+      <div class="benchmark ok">✅ 接近满编</div>
+    </div>
+    <div class="kpi-card">
+      <div class="label">满编率（年度预算）</div>
       <div class="value">95.8%</div>
       <div class="sub">在职 1,889 + 在途 108 / 预算 2,064</div>
       <div class="benchmark ok">✅ 接近满编</div>
@@ -100,24 +106,25 @@ tr:hover td{background:#fafbfc}
   </div>
 
   <div class="section-title">各部门明细数据</div>
+  <div class="note">⚠️ 滚测HC列及滚测满编率为模拟数据（待申请 hr.ads_org_dept_cost_hc_df 权限后替换真实数据）。其余列为真实数据。</div>
   <table>
-    <tr><th>二级部门</th><th>预算HC</th><th>在职</th><th>在途</th><th>待招</th><th>满编率</th><th>状态</th></tr>
-    <tr><td>国际互联网部</td><td>426</td><td>384</td><td>22</td><td>20</td><td>95.3%</td><td><span class="tag tag-ok">正常</span></td></tr>
-    <tr><td>应用生态部（南京）</td><td>393</td><td>355</td><td>20</td><td>18</td><td>95.4%</td><td><span class="tag tag-ok">正常</span></td></tr>
-    <tr><td>内容生态部（南京）</td><td>217</td><td>190</td><td>12</td><td>15</td><td>93.1%</td><td><span class="tag tag-ok">正常</span></td></tr>
-    <tr><td>商业平台部</td><td>190</td><td>166</td><td>16</td><td>8</td><td>95.8%</td><td><span class="tag tag-ok">正常</span></td></tr>
-    <tr><td>数据算法部</td><td>188</td><td>191</td><td>17</td><td>-20</td><td>110.6%</td><td><span class="tag tag-over">超编</span></td></tr>
-    <tr><td>电视与视频业务部</td><td>152</td><td>132</td><td>13</td><td>7</td><td>95.4%</td><td><span class="tag tag-ok">正常</span></td></tr>
-    <tr><td>商业营销部</td><td>120</td><td>116</td><td>-1</td><td>5</td><td>95.8%</td><td><span class="tag tag-ok">正常</span></td></tr>
-    <tr><td>商务合作部</td><td>73</td><td>66</td><td>2</td><td>5</td><td>93.2%</td><td><span class="tag tag-ok">正常</span></td></tr>
-    <tr><td>测试部</td><td>61</td><td>60</td><td>7</td><td>-6</td><td>109.8%</td><td><span class="tag tag-over">超编</span></td></tr>
-    <tr><td>综合管理部</td><td>24</td><td>24</td><td>2</td><td>-2</td><td>108.3%</td><td><span class="tag tag-over">超编</span></td></tr>
-    <tr><td>创新业务部</td><td>14</td><td>21</td><td>0</td><td>-7</td><td>150.0%</td><td><span class="tag tag-over">超编</span></td></tr>
-    <tr><td>参谋部</td><td>13</td><td>9</td><td>0</td><td>4</td><td>69.2%</td><td><span class="tag tag-slow">缓慢</span></td></tr>
-    <tr><td>质量部</td><td>5</td><td>5</td><td>0</td><td>0</td><td>100.0%</td><td><span class="tag tag-ok">正常</span></td></tr>
-    <tr style="font-weight:700;background:#f8f8f8"><td>合计</td><td>2,064</td><td>1,889</td><td>108</td><td>67</td><td>95.8%</td><td>—</td></tr>
+    <tr><th>二级部门</th><th>滚测HC ⚠️</th><th>预算HC</th><th>在职</th><th>在途</th><th>待招</th><th>滚测满编率 ⚠️</th><th>预算满编率</th><th>状态</th></tr>
+    <tr><td>国际互联网部</td><td>430</td><td>426</td><td>384</td><td>22</td><td>24</td><td>94.4%</td><td>95.3%</td><td><span class="tag tag-ok">正常</span></td></tr>
+    <tr><td>应用生态部（南京）</td><td>400</td><td>393</td><td>355</td><td>20</td><td>25</td><td>93.8%</td><td>95.4%</td><td><span class="tag tag-ok">正常</span></td></tr>
+    <tr><td>内容生态部（南京）</td><td>220</td><td>217</td><td>190</td><td>12</td><td>18</td><td>91.8%</td><td>93.1%</td><td><span class="tag tag-ok">正常</span></td></tr>
+    <tr><td>商业平台部</td><td>195</td><td>190</td><td>166</td><td>16</td><td>13</td><td>93.3%</td><td>95.8%</td><td><span class="tag tag-ok">正常</span></td></tr>
+    <tr><td>数据算法部</td><td>180</td><td>188</td><td>191</td><td>17</td><td>-28</td><td>115.6%</td><td>110.6%</td><td><span class="tag tag-over">超编</span></td></tr>
+    <tr><td>电视与视频业务部</td><td>155</td><td>152</td><td>132</td><td>13</td><td>10</td><td>93.5%</td><td>95.4%</td><td><span class="tag tag-ok">正常</span></td></tr>
+    <tr><td>商业营销部</td><td>125</td><td>120</td><td>116</td><td>-1</td><td>10</td><td>92.0%</td><td>95.8%</td><td><span class="tag tag-ok">正常</span></td></tr>
+    <tr><td>商务合作部</td><td>75</td><td>73</td><td>66</td><td>2</td><td>7</td><td>90.7%</td><td>93.2%</td><td><span class="tag tag-ok">正常</span></td></tr>
+    <tr><td>测试部</td><td>58</td><td>61</td><td>60</td><td>7</td><td>-9</td><td>115.5%</td><td>109.8%</td><td><span class="tag tag-over">超编</span></td></tr>
+    <tr><td>综合管理部</td><td>25</td><td>24</td><td>24</td><td>2</td><td>-1</td><td>104.0%</td><td>108.3%</td><td><span class="tag tag-over">超编</span></td></tr>
+    <tr><td>创新业务部</td><td>14</td><td>14</td><td>21</td><td>0</td><td>-7</td><td>150.0%</td><td>150.0%</td><td><span class="tag tag-over">超编</span></td></tr>
+    <tr><td>参谋部</td><td>15</td><td>13</td><td>9</td><td>0</td><td>6</td><td>60.0%</td><td>69.2%</td><td><span class="tag tag-slow">缓慢</span></td></tr>
+    <tr><td>质量部</td><td>7</td><td>5</td><td>5</td><td>0</td><td>2</td><td>71.4%</td><td>100.0%</td><td><span class="tag tag-ok">正常</span></td></tr>
+    <tr style="font-weight:700;background:#f8f8f8"><td>合计</td><td>2,099</td><td>2,064</td><td>1,889</td><td>108</td><td>102</td><td>95.1%</td><td>95.8%</td><td>—</td></tr>
   </table>
-  <div class="note">💡 数据算法部(+20人)、测试部(+6人)、综合管理部(+2人)、创新业务部(+7人)已超编，建议审查HC使用情况。参谋部满编率仅69.2%，需关注。</div>
+  <div class="note">💡 数据算法部(+28人)、测试部(+9人)、综合管理部(+1人)、创新业务部(+7人)已超编，建议审查HC使用情况。参谋部满编率仅60%，需关注。</div>
 
   <div class="section-title">招需缺口TOP序列</div>
   <table>
@@ -223,13 +230,18 @@ function switchTab(idx){
 // Chart: 部门满编率
 const chartFill = echarts.init(document.getElementById('chart_fill_rate'));
 const depts = ['国际互联网部','应用生态部','内容生态部','商业平台部','数据算法部','电视与视频','商业营销部','商务合作部','测试部','综合管理部','创新业务部','参谋部','质量部'];
-const fillRates = [95.3,95.4,93.1,95.8,110.6,95.4,95.8,93.2,109.8,108.3,150.0,69.2,100.0];
+const fillRates = [94.4,93.8,91.8,93.3,115.6,93.5,92.0,90.7,115.5,104.0,150.0,60.0,71.4];
+const budgetRates = [95.3,95.4,93.1,95.8,110.6,95.4,95.8,93.2,109.8,108.3,150.0,69.2,100.0];
 chartFill.setOption({
-  tooltip:{trigger:'axis',axisPointer:{type:'shadow'},formatter:p=>`${p[0].name}<br/>满编率: <b>${p[0].value}%</b>`},
-  grid:{left:130,right:40,top:10,bottom:20},
+  tooltip:{trigger:'axis',axisPointer:{type:'shadow'},formatter:p=>`${p[0].name}<br/>滚测满编率: <b>${p[0].value}%</b><br/>预算满编率: <b>${p[1].value}%</b>`},
+  legend:{data:['滚测满编率 ⚠️模拟','预算满编率'],bottom:0},
+  grid:{left:130,right:40,top:30,bottom:40},
   xAxis:{type:'value',min:50,max:160,axisLabel:{formatter:'{value}%'}},
   yAxis:{type:'category',data:depts.reverse(),axisLabel:{fontSize:11}},
-  series:[{type:'bar',data:fillRates.reverse().map(v=>({value:v,itemStyle:{color:v>100?'#E53E3E':v<80?'#F6AD55':'#38A169'}})),barWidth:18,label:{show:true,position:'right',formatter:'{c}%',fontSize:11}}]
+  series:[
+    {name:'滚测满编率 ⚠️模拟',type:'bar',data:fillRates.reverse().map(v=>({value:v,itemStyle:{color:v>100?'#E53E3E':v<80?'#F6AD55':'#FF6900'}})),barWidth:12},
+    {name:'预算满编率',type:'bar',data:budgetRates.reverse().map(v=>({value:v,itemStyle:{color:v>100?'#E53E3E':v<80?'#F6AD55':'#38A169'}})),barWidth:12}
+  ]
 });
 
 // Chart: 招聘进展状态
