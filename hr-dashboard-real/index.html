@@ -102,9 +102,15 @@ body{font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Microsoft YaHei
 .toolbar .title-area h1{font-size:22px;margin-bottom:4px}
 .toolbar .title-area p{color:var(--t2);font-size:14px}
 .share-wrap{position:relative;flex-shrink:0}
-.toolbar-btns{display:flex;align-items:center;gap:8px;flex-shrink:0}
-.share-btn svg{margin-bottom:-1px}
-.more-btn{padding:8px 10px}
+.toolbar-btns{display:flex;align-items:center;gap:10px;flex-shrink:0}
+.toolbar-btns .btn-edit{background:#fff;border:1px solid #c9cdd4;color:#646a73;border-radius:8px;padding:7px 16px;font-size:14px;cursor:pointer;transition:.15s}
+.toolbar-btns .btn-edit:hover{border-color:var(--pri);color:var(--pri)}
+.toolbar-btns .btn-share{background:var(--pri);border:none;color:#fff;border-radius:8px;padding:7px 16px;font-size:14px;cursor:pointer;display:flex;align-items:center;gap:5px;transition:.15s}
+.toolbar-btns .btn-share:hover{background:#2860e1}
+.toolbar-btns .btn-share svg{margin-bottom:-1px}
+.toolbar-btns .btn-dots{background:none;border:none;cursor:pointer;padding:6px;display:flex;flex-direction:column;gap:3px;align-items:center;transition:.15s;border-radius:6px}
+.toolbar-btns .btn-dots:hover{background:#e8e8e8}
+.toolbar-btns .btn-dots span{width:4px;height:4px;border-radius:50%;background:#333;display:block}
 .dropdown{position:absolute;top:calc(100% + 6px);right:0;background:var(--card);border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,.15);min-width:220px;padding:6px 0;z-index:50;opacity:0;pointer-events:none;transform:translateY(-6px);transition:.18s}
 .dropdown.show{opacity:1;pointer-events:all;transform:translateY(0)}
 .dropdown .dd-item{display:flex;align-items:center;gap:10px;padding:10px 16px;font-size:14px;color:var(--t1);cursor:pointer;transition:.12s}
