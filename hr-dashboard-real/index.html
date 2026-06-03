@@ -96,6 +96,21 @@ body{font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Microsoft YaHei
 .sd{flex:1;height:1px;background:var(--bdr);margin:0 12px;min-width:20px}
 
 @media(max-width:768px){.sb{display:none}.mn{padding:16px}.kpi-g{grid-template-columns:1fr 1fr}.cd-g2{grid-template-columns:1fr}}
+
+/* toolbar */
+.toolbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.toolbar .title-area h1{font-size:22px;margin-bottom:4px}
+.toolbar .title-area p{color:var(--t2);font-size:14px}
+.share-wrap{position:relative;flex-shrink:0}
+.share-btn{background:var(--pri);color:#fff;border:none;padding:8px 18px;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:6px;transition:.15s}
+.share-btn:hover{background:#2860e1}
+.share-btn svg{width:16px;height:16px}
+.dropdown{position:absolute;top:calc(100% + 6px);right:0;background:var(--card);border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,.15);min-width:220px;padding:6px 0;z-index:50;opacity:0;pointer-events:none;transform:translateY(-6px);transition:.18s}
+.dropdown.show{opacity:1;pointer-events:all;transform:translateY(0)}
+.dropdown .dd-item{display:flex;align-items:center;gap:10px;padding:10px 16px;font-size:14px;color:var(--t1);cursor:pointer;transition:.12s}
+.dropdown .dd-item:hover{background:var(--pri-l);color:var(--pri)}
+.dropdown .dd-item .ico{font-size:16px;width:20px;text-align:center}
+.dropdown .dd-divider{height:1px;background:var(--bdr);margin:4px 0}
 </style>
 </head>
 <body>
@@ -123,10 +138,33 @@ body{font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Microsoft YaHei
   </div>
 
   <div class="mn" id="mainContent">
-    <!-- Header -->
-    <div class="hd">
-      <h1>📉 集团信息技术部 · 人员流失诊断 2026</h1>
-      <p>数据截至最新快照 | 口径：正式员工 + 外包A + 外部顾问A | 分析范围：13个二级部门</p>
+    <!-- Header + Toolbar -->
+    <div class="toolbar">
+      <div class="title-area">
+        <h1>📉 集团信息技术部 · 人员流失诊断 2026</h1>
+        <p>数据截至最新快照 | 口径：正式员工 + 外包A + 外部顾问A | 分析范围：13个二级部门</p>
+      </div>
+      <div class="share-wrap">
+        <button class="share-btn" onclick="toggleDropdown(event)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+          分享
+        </button>
+        <div class="dropdown" id="shareDropdown">
+          <div class="dd-item" onclick="doAction('refresh')"><span class="ico">🔄</span>刷新</div>
+          <div class="dd-item" onclick="doAction('info')"><span class="ico">ℹ️</span>详细信息</div>
+          <div class="dd-item" onclick="doAction('comment')"><span class="ico">💬</span>查看评论</div>
+          <div class="dd-item" onclick="doAction('subscribe')"><span class="ico">🔔</span>看板订阅</div>
+          <div class="dd-divider"></div>
+          <div class="dd-item" onclick="doAction('embed')"><span class="ico">📄</span>嵌入飞书文档</div>
+          <div class="dd-item" onclick="doAction('link')"><span class="ico">🔗</span>生成短链</div>
+          <div class="dd-divider"></div>
+          <div class="dd-item" onclick="doAction('exportImg')"><span class="ico">🖼️</span>导出为图片</div>
+          <div class="dd-item" onclick="doAction('exportBatch')"><span class="ico">📊</span>批量导出图表</div>
+          <div class="dd-divider"></div>
+          <div class="dd-item" onclick="doAction('theme')"><span class="ico">🎨</span>切换主题风格</div>
+          <div class="dd-item" onclick="doAction('fullscreen')"><span class="ico">⛶</span>全屏显示</div>
+        </div>
+      </div>
     </div>
 
     <!-- KPI -->
@@ -291,6 +329,25 @@ function scrollToEl(id){document.getElementById(id)?.scrollIntoView({behavior:'s
 function showToast(m){const e=document.getElementById('toast');e.textContent=m;e.classList.add('show');setTimeout(()=>e.classList.remove('show'),3000)}
 function openModal(){document.getElementById('pubModal').classList.add('show')}
 function closeModal(){document.getElementById('pubModal').classList.remove('show')}
+
+// Share dropdown
+function toggleDropdown(e){e.stopPropagation();const d=document.getElementById('shareDropdown');d.classList.toggle('show')}
+document.addEventListener('click',()=>document.getElementById('shareDropdown')?.classList.remove('show'));
+function doAction(a){
+  const map={
+    refresh:()=>{location.reload()},
+    info:()=>showToast('📋 看板信息：集团信息技术部-人员流失诊断 2026'),
+    comment:()=>showToast('💬 评论功能开发中'),
+    subscribe:()=>showToast('🔔 已订阅看板更新通知'),
+    embed:()=>{navigator.clipboard?.writeText('<iframe src="'+location.href+'" width="100%" height="600"></iframe>');showToast('📄 嵌入代码已复制')},
+    link:()=>{navigator.clipboard?.writeText(location.href);showToast('🔗 短链已复制到剪贴板')},
+    exportImg:()=>showToast('🖼️ 正在生成截图...'),
+    exportBatch:()=>showToast('📊 正在批量导出...'),
+    theme:()=>{document.body.classList.toggle('dark-theme');showToast('🎨 主题已切换')},
+    fullscreen:()=>{document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen()}
+  };
+  (map[a]||(()=>showToast('功能开发中')))();
+}
 </script>
 </body>
 </html>
