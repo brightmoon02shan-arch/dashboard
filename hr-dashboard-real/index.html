@@ -102,9 +102,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Microsoft YaHei
 .toolbar .title-area h1{font-size:22px;margin-bottom:4px}
 .toolbar .title-area p{color:var(--t2);font-size:14px}
 .share-wrap{position:relative;flex-shrink:0}
-.share-btn{background:var(--pri);color:#fff;border:none;padding:8px 18px;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:6px;transition:.15s}
-.share-btn:hover{background:#2860e1}
-.share-btn svg{width:16px;height:16px}
+.toolbar-btns{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.share-btn svg{margin-bottom:-1px}
+.more-btn{padding:8px 10px}
 .dropdown{position:absolute;top:calc(100% + 6px);right:0;background:var(--card);border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,.15);min-width:220px;padding:6px 0;z-index:50;opacity:0;pointer-events:none;transform:translateY(-6px);transition:.18s}
 .dropdown.show{opacity:1;pointer-events:all;transform:translateY(0)}
 .dropdown .dd-item{display:flex;align-items:center;gap:10px;padding:10px 16px;font-size:14px;color:var(--t1);cursor:pointer;transition:.12s}
@@ -335,6 +335,8 @@ function toggleDropdown(e){e.stopPropagation();const d=document.getElementById('
 document.addEventListener('click',()=>document.getElementById('shareDropdown')?.classList.remove('show'));
 function doAction(a){
   const map={
+    edit:()=>showToast('✏️ 编辑模式已开启'),
+    share:()=>{navigator.clipboard?.writeText(location.href);showToast('🔗 分享链接已复制')},
     refresh:()=>{location.reload()},
     info:()=>showToast('📋 看板信息：集团信息技术部-人员流失诊断 2026'),
     comment:()=>showToast('💬 评论功能开发中'),
