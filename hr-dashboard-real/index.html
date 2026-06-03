@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>HR智能分析平台 — 集团信息技术部·人员流失诊断 2026</title>
+<title>HR智能分析平台</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
@@ -11,22 +11,28 @@
 body{font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Microsoft YaHei',sans-serif;background:var(--bg);color:var(--t1)}
 .app{display:flex;height:100vh}
 
-/* sidebar */
+/* ===== Sidebar ===== */
 .sb{width:260px;background:var(--card);border-right:1px solid var(--bdr);display:flex;flex-direction:column;flex-shrink:0}
 .sb-hd{padding:20px;border-bottom:1px solid var(--bdr)}
 .sb-hd h2{font-size:16px;color:var(--pri);display:flex;align-items:center;gap:8px}
 .sb-hd h2::before{content:'🧠'}
 .sb-nav{flex:1;padding:12px;overflow-y:auto}
-.ng{font-size:12px;color:var(--t2);padding:8px 12px 4px;font-weight:600}
-.ni{padding:10px 12px;border-radius:8px;cursor:pointer;font-size:14px;display:flex;align-items:center;gap:8px;transition:.15s}
-.ni:hover,.ni.act{background:var(--pri-l);color:var(--pri);font-weight:600}
+.ng{font-size:12px;color:var(--t2);padding:8px 12px 4px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:space-between}
+.ng .arrow{font-size:10px;transition:.2s}
+.ng.collapsed .arrow{transform:rotate(-90deg)}
+.ng-items{overflow:hidden;transition:max-height .25s ease}
+.ng.collapsed+.ng-items{max-height:0!important}
+.ni{padding:10px 12px;border-radius:8px;cursor:pointer;font-size:14px;display:flex;align-items:center;gap:8px;transition:.15s;position:relative}
+.ni:hover{background:var(--pri-l)}
+.ni.act{background:var(--pri-l);color:var(--pri);font-weight:600}
+.ni .count{background:var(--bdr);color:var(--t2);font-size:11px;padding:1px 6px;border-radius:10px;margin-left:auto}
 .sb-ft{padding:16px;border-top:1px solid var(--bdr);font-size:12px;color:var(--t2)}
 .sb-ft a{color:var(--pri);text-decoration:none}
 
-/* main */
+/* ===== Main ===== */
 .mn{flex:1;overflow-y:auto;padding:24px 32px}
 
-/* toolbar */
+/* ===== Toolbar ===== */
 .toolbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
 .toolbar .title-area h1{font-size:22px;margin-bottom:4px}
 .toolbar .title-area p{color:var(--t2);font-size:14px}
@@ -40,7 +46,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Microsoft YaHei
 .btn-dots:hover{background:#e8e8e8}
 .btn-dots span{width:4px;height:4px;border-radius:50%;background:#333;display:block}
 
-/* dropdown */
+/* ===== Dropdown ===== */
 .dropdown-wrap{position:relative}
 .dropdown{position:absolute;top:calc(100% + 6px);right:0;background:var(--card);border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,.15);min-width:220px;padding:6px 0;z-index:50;opacity:0;pointer-events:none;transform:translateY(-6px);transition:.18s}
 .dropdown.show{opacity:1;pointer-events:all;transform:translateY(0)}
@@ -49,23 +55,25 @@ body{font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Microsoft YaHei
 .dd-item .ico{font-size:16px;width:20px;text-align:center}
 .dd-divider{height:1px;background:var(--bdr);margin:4px 0}
 
-/* kpi */
+/* ===== KPI ===== */
 .kpi-g{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px}
-.kpi{color:#fff;padding:18px;border-radius:var(--r);position:relative;overflow:hidden}
+.kpi{color:#fff;padding:18px;border-radius:var(--r);position:relative;overflow:hidden;cursor:pointer;transition:.2s}
+.kpi:hover{transform:translateY(-2px);box-shadow:0 4px 16px rgba(0,0,0,.15)}
 .kpi::after{content:'';position:absolute;top:-20px;right:-20px;width:80px;height:80px;border-radius:50%;background:rgba(255,255,255,.12)}
 .kpi .lb{font-size:12px;opacity:.85}.kpi .vl{font-size:30px;font-weight:700;margin:4px 0}.kpi .sb2{font-size:11px;opacity:.7}
-.kpi.c1{background:linear-gradient(135deg,#f44336,#e57373)}
-.kpi.c2{background:linear-gradient(135deg,#ff9800,#ffb74d)}
-.kpi.c3{background:linear-gradient(135deg,#3370ff,#5b8def)}
-.kpi.c4{background:linear-gradient(135deg,#34c724,#66bb6a)}
+.kpi.c1{background:linear-gradient(135deg,#f44336,#e57373)}.kpi.c2{background:linear-gradient(135deg,#ff9800,#ffb74d)}.kpi.c3{background:linear-gradient(135deg,#3370ff,#5b8def)}.kpi.c4{background:linear-gradient(135deg,#34c724,#66bb6a)}
 
-/* card */
-.cd{background:var(--card);border-radius:var(--r);padding:20px;margin-bottom:16px;box-shadow:var(--sh)}
+/* ===== Card ===== */
+.cd{background:var(--card);border-radius:var(--r);padding:20px;margin-bottom:16px;box-shadow:var(--sh);position:relative}
 .cd h3{font-size:15px;margin-bottom:12px;display:flex;align-items:center;gap:6px}
 .cd-g2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
 .ch{position:relative;height:260px}
+.cd .edit-overlay{position:absolute;top:8px;right:8px;opacity:0;transition:.15s;display:flex;gap:4px}
+.cd:hover .edit-overlay{opacity:1}
+.cd .edit-overlay button{background:var(--card);border:1px solid var(--bdr);border-radius:6px;padding:4px 8px;font-size:12px;cursor:pointer}
+.cd .edit-overlay button:hover{border-color:var(--pri);color:var(--pri)}
 
-/* table */
+/* ===== Table ===== */
 .tb{width:100%;border-collapse:collapse;font-size:13px}
 .tb th{background:#f8f9fa;padding:10px 12px;text-align:left;font-weight:600;border-bottom:2px solid var(--bdr)}
 .tb td{padding:10px 12px;border-bottom:1px solid var(--bdr)}
@@ -73,18 +81,64 @@ body{font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Microsoft YaHei
 .bg{display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600}
 .bg-r{background:#fde8e8;color:var(--err)}.bg-y{background:#fff3e0;color:var(--warn)}.bg-g{background:#e8f5e9;color:var(--ok)}
 
-/* ai */
+/* ===== AI ===== */
 .ai{background:#f0f4ff;border-radius:var(--r);padding:16px;margin-bottom:16px}
 .ai .av{width:32px;height:32px;border-radius:50%;background:var(--pri);color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;margin-bottom:8px}
 .ai .msg{font-size:14px;line-height:1.6}
 .cn p{font-size:14px;line-height:1.8;margin-bottom:10px}
 .cn strong{color:var(--pri)}
 
-/* toast */
+/* ===== Template cards ===== */
+.tpl-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px}
+.tpl-card{background:var(--card);border-radius:var(--r);padding:20px;cursor:pointer;border:2px solid transparent;transition:.2s;box-shadow:var(--sh)}
+.tpl-card:hover{border-color:var(--pri);transform:translateY(-2px)}
+.tpl-card .icon{font-size:32px;margin-bottom:10px}
+.tpl-card h3{font-size:15px;margin-bottom:6px}
+.tpl-card p{font-size:13px;color:var(--t2);line-height:1.5}
+.tpl-card .tags{margin-top:10px;display:flex;gap:6px;flex-wrap:wrap}
+.tag{font-size:11px;padding:2px 8px;border-radius:4px;background:var(--pri-l);color:var(--pri)}
+
+/* ===== Workspace ===== */
+.ws-card{background:var(--card);border-radius:var(--r);padding:16px 20px;margin-bottom:12px;box-shadow:var(--sh);display:flex;align-items:center;justify-content:space-between;cursor:pointer;transition:.15s}
+.ws-card:hover{border-color:var(--pri);box-shadow:0 4px 16px rgba(0,0,0,.1)}
+.ws-card .left{display:flex;align-items:center;gap:12px}
+.ws-card .left .icon{font-size:24px}
+.ws-card .left .info h4{font-size:14px;margin-bottom:2px}
+.ws-card .left .info p{font-size:12px;color:var(--t2)}
+.ws-card .status{font-size:12px;padding:3px 10px;border-radius:10px}
+
+/* ===== Edit Panel ===== */
+.edit-panel{position:fixed;top:0;right:-480px;width:480px;height:100vh;background:var(--card);box-shadow:-4px 0 20px rgba(0,0,0,.1);z-index:100;transition:right .3s;overflow-y:auto;padding:24px}
+.edit-panel.open{right:0}
+.edit-panel h2{font-size:18px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between}
+.edit-panel h2 .close-btn{background:none;border:none;font-size:20px;cursor:pointer;color:var(--t2)}
+.edit-panel h2 .close-btn:hover{color:var(--t1)}
+.edit-panel .form-group{margin-bottom:16px}
+.edit-panel .form-group label{font-size:13px;color:var(--t2);display:block;margin-bottom:4px;font-weight:600}
+.edit-panel .form-group input,.edit-panel .form-group textarea,.edit-panel .form-group select{width:100%;padding:8px 12px;border:1px solid var(--bdr);border-radius:8px;font-size:14px;font-family:inherit}
+.edit-panel .form-group textarea{resize:vertical;min-height:60px}
+.edit-panel .kpi-edit-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
+.edit-panel .kpi-edit{border:1px solid var(--bdr);border-radius:8px;padding:12px}
+.edit-panel .kpi-edit label{font-size:12px;color:var(--t2);display:block;margin-bottom:4px}
+.edit-panel .kpi-edit input{width:100%;border:1px solid var(--bdr);border-radius:6px;padding:6px 8px;font-size:14px}
+.edit-panel .btn-row{display:flex;gap:8px;margin-top:20px}
+.edit-panel .btn-row .btn{flex:1;padding:10px;border-radius:8px;border:none;font-size:14px;cursor:pointer;font-weight:500}
+.edit-panel .btn-row .btn-save{background:var(--pri);color:#fff}
+.edit-panel .btn-row .btn-cancel{background:var(--bg);color:var(--t1);border:1px solid var(--bdr)}
+.edit-overlay-btn{position:absolute;top:8px;right:8px;opacity:0;transition:.15s}
+.cd:hover .edit-overlay-btn{opacity:1}
+
+/* ===== Buttons ===== */
+.btn{padding:8px 20px;border-radius:8px;border:none;cursor:pointer;font-size:14px;font-weight:500;transition:.15s;display:inline-flex;align-items:center;gap:6px}
+.btn-p{background:var(--pri);color:#fff}.btn-p:hover{background:#2860e1}
+.btn-o{background:transparent;border:1px solid var(--bdr);color:var(--t1)}.btn-o:hover{border-color:var(--pri);color:var(--pri)}
+.btn-sm{padding:5px 12px;font-size:12px}
+
+/* ===== Toast ===== */
 .toast{position:fixed;top:24px;right:24px;background:var(--ok);color:#fff;padding:12px 24px;border-radius:10px;font-size:14px;box-shadow:0 4px 20px rgba(0,0,0,.15);z-index:200;transform:translateX(120%);transition:.3s}
 .toast.show{transform:translateX(0)}
 
-/* modal */
+/* ===== Modal ===== */
 .mo{position:fixed;inset:0;background:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;z-index:100;opacity:0;pointer-events:none;transition:.25s}
 .mo.show{opacity:1;pointer-events:all}
 .modal{background:var(--card);border-radius:16px;padding:32px;width:480px;max-width:90vw;box-shadow:0 20px 60px rgba(0,0,0,.2)}
@@ -92,12 +146,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Microsoft YaHei
 .modal .fr{margin-bottom:14px}
 .modal label{font-size:13px;color:var(--t2);display:block;margin-bottom:4px}
 .modal input,.modal select{width:100%;padding:8px 12px;border:1px solid var(--bdr);border-radius:8px;font-size:14px}
-.bg2{display:flex;gap:8px;margin-top:16px;justify-content:flex-end}
-.btn{padding:8px 20px;border-radius:8px;border:none;cursor:pointer;font-size:14px;font-weight:500;transition:.15s;display:inline-flex;align-items:center;gap:6px}
-.btn-p{background:var(--pri);color:#fff}.btn-p:hover{background:#2860e1}
-.btn-o{background:transparent;border:1px solid var(--bdr);color:var(--t1)}.btn-o:hover{border-color:var(--pri);color:var(--pri)}
+.modal .btn-row{display:flex;gap:8px;margin-top:16px;justify-content:flex-end}
 
-@media(max-width:768px){.sb{display:none}.mn{padding:16px}.kpi-g{grid-template-columns:1fr 1fr}.cd-g2{grid-template-columns:1fr}}
+@media(max-width:768px){.sb{display:none}.mn{padding:16px}.kpi-g{grid-template-columns:1fr 1fr}.cd-g2{grid-template-columns:1fr}.edit-panel{width:100%}}
 </style>
 </head>
 <body>
@@ -105,56 +156,243 @@ body{font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Microsoft YaHei
   <!-- Sidebar -->
   <div class="sb">
     <div class="sb-hd"><h2>HR智能分析平台</h2></div>
-    <div class="sb-nav">
-      <div class="ng">当前看板</div>
-      <div class="ni act">📉 集团信息技术部 · 人员流失诊断</div>
-      <div class="ng" style="margin-top:16px">看板模块</div>
-      <div class="ni" onclick="scrollToEl('sec-kpi')">📊 KPI 概览</div>
-      <div class="ni" onclick="scrollToEl('sec-trend')">📈 月度趋势</div>
-      <div class="ni" onclick="scrollToEl('sec-dept')">🏢 部门对比</div>
-      <div class="ni" onclick="scrollToEl('sec-level')">👤 职级分布</div>
-      <div class="ni" onclick="scrollToEl('sec-ai')">🤖 AI 分析结论</div>
-      <div class="ng" style="margin-top:16px">操作</div>
-      <div class="ni" onclick="openModal()">📤 发布看板</div>
-      <div class="ni" onclick="showToast('链接已复制')">🔗 分享链接</div>
-    </div>
+    <div class="sb-nav" id="sidebarNav"></div>
     <div class="sb-ft">
       数据来源：HR数据仓库 · 最新快照<br>
-      口径：正式 + 外包A + 外部顾问A<br>
-      <a href="index.html">← 返回模板中心</a>
+      口径：正式 + 外包A + 外部顾问A
     </div>
   </div>
-
   <!-- Main -->
-  <div class="mn">
+  <div class="mn" id="mainContent"></div>
+</div>
+
+<!-- Edit Panel -->
+<div class="edit-panel" id="editPanel"></div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<!-- Publish Modal -->
+<div class="mo" id="pubModal">
+  <div class="modal">
+    <h2>📤 发布看板</h2>
+    <div class="fr"><label>看板名称</label><input id="pubName"></div>
+    <div class="fr"><label>可见范围</label><select id="pubScope"><option>仅自己可见</option><option selected>指定HRBP可见</option><option>部门负责人可见</option><option>全员可见</option></select></div>
+    <div class="fr"><label>有效期</label><select><option>永久有效</option><option selected>30天</option><option>7天</option></select></div>
+    <div class="btn-row"><button class="btn btn-o" onclick="closeModal()">取消</button><button class="btn btn-p" onclick="doPublish()">确认发布</button></div>
+  </div>
+</div>
+
+<script>
+// ===================== DATA STORE =====================
+const DB_KEY = 'hr_dashboard_data';
+
+function loadDB() {
+  const raw = localStorage.getItem(DB_KEY);
+  if (raw) return JSON.parse(raw);
+  // Default: the real data dashboard
+  const db = {
+    dashboards: [{
+      id: 'info-dept-2026',
+      name: '集团信息技术部 · 人员流失诊断 2026',
+      template: '人员流失诊断',
+      status: 'published',
+      scope: '指定HRBP可见',
+      createdAt: '2026-06-03',
+      kpis: [
+        { label: '离职率（2026年累计）', value: '9.1%', sub: '141人离职 / 1,409人在职', color: 'c1' },
+        { label: '被动离职占比', value: '64.5%', sub: '91人被动 / 50人主动', color: 'c2' },
+        { label: '期末在职人数', value: '1,409', sub: '13个二级部门', color: 'c3' },
+        { label: '高风险部门', value: '3个', sub: '离职率 > 12%', color: 'c4' }
+      ],
+      conclusion: '1. 整体离职率偏高，被动离职是主因：累计离职率9.1%（141人），被动离职占比高达64.5%，远超主动离职。3月是离职高峰（40人，其中32人被动），与Q1绩效周期和组织调整节奏强相关。\n2. 高风险部门集中在中小规模团队：技术发展与质量管理部（20.3%）和战略规划与运营部（14.4%）离职率最高，两个部门合计在职仅140人但离职29人，组织稳定性堪忧。\n3. 16-17级以上是离职主力：17级及以上离职49人（被动28人），16级离职42人（被动30人），两个层级合计占总离职的64.5%。\n4. 零售研发部体量最大但控制较好：作为最大部门（347人），零售研发部离职率7.5%低于整体均值，绝对离职人数28人在各部门中最多，但相对风险可控。',
+      charts: {
+        trend: { months: ['1月','2月','3月','4月','5月'], tmn: [26,19,40,33,23], psv: [17,15,32,12,15], vlt: [9,4,8,21,8], rate: [7.8,5.5,11.7,9.7,6.5] },
+        pie: { psv: 91, vlt: 50 },
+        dept: { labels: ['技发与质量','战略规划','中国区销服','AI应用中心','研产供数字化','国际销服','企业智能协同','财经数字化','零售研发','数据部','交付履约','服务研发','汽车销交服'], rates: [20.3,14.4,11.3,10.9,10.5,9.5,8.8,8.6,7.5,7.5,7.0,5.1,0] },
+        level: { labels: ['13级','14级','15级','16级','17级及以上'], psv: [17,5,11,30,28], vlt: [6,4,7,12,21] }
+      }
+    }]
+  };
+  saveDB(db);
+  return db;
+}
+function saveDB(db) { localStorage.setItem(DB_KEY, JSON.stringify(db)); }
+
+// ===================== TEMPLATES =====================
+const templates = [
+  { icon: '📉', name: '人员流失诊断', desc: '分析离职率、主动/被动离职、流失画像，定位高风险部门和人群', tags: ['离职率', '流失画像', '风险预警'] },
+  { icon: '👥', name: '人员结构盘点', desc: '分析年龄、司龄、职级、学历分布，评估组织健康度', tags: ['结构分布', '组织健康'] },
+  { icon: '📊', name: '绩效分布分析', desc: '分析各等级绩效分布、高绩效留存、绩优流失率', tags: ['绩效等级', '高绩效流失'] },
+  { icon: '💰', name: '人力成本分析', desc: '分析人力成本结构、人均成本、预算使用率', tags: ['成本结构', '预算'] },
+  { icon: '🎯', name: '招聘效能分析', desc: '分析招聘漏斗、Offer接受率、到岗周期', tags: ['招聘漏斗', 'Offer率'] },
+  { icon: '📈', name: '人才梯队健康度', desc: '分析关键岗位继任覆盖率、高潜流失风险', tags: ['继任覆盖', '高潜'] }
+];
+
+// ===================== STATE =====================
+let currentPage = 'home'; // home | workspace | templates | dashboard
+let currentDashId = null;
+
+// ===================== ROUTER =====================
+function showPage(page, dashId) {
+  currentPage = page;
+  currentDashId = dashId || null;
+  renderSidebar();
+  renderMain();
+}
+
+// ===================== SIDEBAR =====================
+function renderSidebar() {
+  const db = loadDB();
+  const published = db.dashboards.filter(d => d.status === 'published');
+  const drafts = db.dashboards.filter(d => d.status !== 'published');
+
+  document.getElementById('sidebarNav').innerHTML = `
+    <div class="ng" onclick="toggleGroup(this)">🏠 工作台 <span class="arrow">▼</span></div>
+    <div class="ng-items" style="max-height:200px">
+      <div class="ni ${currentPage==='home'?'act':''}" onclick="showPage('home')">🏠 模板中心</div>
+      <div class="ni ${currentPage==='workspace'?'act':''}" onclick="showPage('workspace')">📂 我的工作台 <span class="count">${drafts.length}</span></div>
+    </div>
+
+    <div class="ng" onclick="toggleGroup(this)" style="margin-top:12px">📋 分析模板 <span class="arrow">▼</span></div>
+    <div class="ng-items" style="max-height:400px">
+      ${templates.map((t, i) => `<div class="ni" onclick="showPage('template',${i})">${t.icon} ${t.name}</div>`).join('')}
+    </div>
+
+    <div class="ng" onclick="toggleGroup(this)" style="margin-top:12px">📊 已发布看板 <span class="arrow">▼</span></div>
+    <div class="ng-items" style="max-height:400px">
+      ${published.length === 0 ? '<div class="ni" style="color:var(--t2);font-size:12px">暂无已发布看板</div>' : published.map(d => `
+        <div class="ni ${currentDashId===d.id?'act':''}" onclick="showPage('dashboard','${d.id}')">📋 ${d.name.length > 16 ? d.name.slice(0,16)+'...' : d.name}</div>
+      `).join('')}
+    </div>
+  `;
+}
+
+function toggleGroup(el) { el.classList.toggle('collapsed'); }
+
+// ===================== MAIN RENDER =====================
+function renderMain() {
+  switch (currentPage) {
+    case 'home': renderHome(); break;
+    case 'workspace': renderWorkspace(); break;
+    case 'template': renderTemplateDetail(); break;
+    case 'dashboard': renderDashboard(); break;
+  }
+}
+
+// ---- Home ----
+function renderHome() {
+  document.getElementById('mainContent').innerHTML = `
+    <div class="toolbar"><div class="title-area"><h1>🏠 模板中心</h1><p>选择分析模板，AI 协助你快速生成交互式 HR 看板</p></div></div>
+    <div class="tpl-grid">
+      ${templates.map((t, i) => `
+        <div class="tpl-card" onclick="showPage('template',${i})">
+          <div class="icon">${t.icon}</div><h3>${t.name}</h3><p>${t.desc}</p>
+          <div class="tags">${t.tags.map(g => `<span class="tag">${g}</span>`).join('')}</div>
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+
+// ---- Workspace ----
+function renderWorkspace() {
+  const db = loadDB();
+  const drafts = db.dashboards.filter(d => d.status !== 'published');
+  const published = db.dashboards.filter(d => d.status === 'published');
+
+  document.getElementById('mainContent').innerHTML = `
+    <div class="toolbar"><div class="title-area"><h1>📂 我的工作台</h1><p>管理你的分析项目</p></div>
+      <button class="btn btn-p" onclick="showPage('home')">＋ 新建分析</button>
+    </div>
+    ${drafts.length ? `<h3 style="margin:16px 0 8px;font-size:14px;color:var(--t2)">进行中</h3>
+      ${drafts.map(d => wsCard(d, '进行中', 'bg-y')).join('')}` : ''}
+    <h3 style="margin:16px 0 8px;font-size:14px;color:var(--t2)">已发布</h3>
+    ${published.map(d => wsCard(d, '已发布', 'bg-g')).join('')}
+  `;
+}
+function wsCard(d, label, cls) {
+  return `<div class="ws-card" onclick="showPage('dashboard','${d.id}')">
+    <div class="left"><div class="icon">📉</div><div class="info"><h4>${d.name}</h4><p>${d.template} · ${d.createdAt}</p></div></div>
+    <span class="bg ${cls}">${label}</span>
+  </div>`;
+}
+
+// ---- Template Detail ----
+function renderTemplateDetail() {
+  const t = templates[currentDashId] || templates[0];
+  document.getElementById('mainContent').innerHTML = `
+    <div class="toolbar"><div class="title-area"><h1>${t.icon} ${t.name}</h1><p>${t.desc}</p></div></div>
+    <div class="cd">
+      <h3>📌 模板说明</h3>
+      <p style="font-size:14px;line-height:1.8">使用此模板，AI 将引导你完成以下步骤：</p>
+      <ol style="font-size:14px;line-height:2;padding-left:20px">
+        <li>确认分析主题和范围</li>
+        <li>确认分析问题清单</li>
+        <li>确认数据口径（自动匹配数据表和字段）</li>
+        <li>AI 生成看板初稿</li>
+        <li>HRBP 微调（在线编辑 KPI、结论、图表）</li>
+        <li>发布看板</li>
+      </ol>
+    </div>
+    <div class="btn-row" style="display:flex;gap:8px">
+      <button class="btn btn-p" onclick="createFromTemplate('${t.name}')">🚀 使用此模板创建</button>
+      <button class="btn btn-o" onclick="showPage('home')">返回模板中心</button>
+    </div>
+  `;
+}
+
+function createFromTemplate(tplName) {
+  const db = loadDB();
+  const id = 'dash-' + Date.now();
+  db.dashboards.push({
+    id, name: tplName + ' - 新建', template: tplName, status: 'draft', scope: '仅自己可见',
+    createdAt: new Date().toISOString().slice(0,10),
+    kpis: [
+      { label: '指标1', value: '--', sub: '待填充', color: 'c1' },
+      { label: '指标2', value: '--', sub: '待填充', color: 'c2' },
+      { label: '指标3', value: '--', sub: '待填充', color: 'c3' },
+      { label: '指标4', value: '--', sub: '待填充', color: 'c4' }
+    ],
+    conclusion: '待 AI 生成分析结论...',
+    charts: { trend: { months:['1月','2月','3月','4月','5月'], tmn:[0,0,0,0,0], psv:[0,0,0,0,0], vlt:[0,0,0,0,0], rate:[0,0,0,0,0] }, pie:{psv:0,vlt:0}, dept:{labels:[],rates:[]}, level:{labels:[],psv:[],vlt:[]} }
+  });
+  saveDB(db);
+  showToast('✅ 看板已创建');
+  showPage('dashboard', id);
+}
+
+// ===================== DASHBOARD =====================
+function renderDashboard() {
+  const db = loadDB();
+  const d = db.dashboards.find(x => x.id === currentDashId);
+  if (!d) { showPage('home'); return; }
+  const c = d.charts;
+
+  document.getElementById('mainContent').innerHTML = `
     <!-- Toolbar -->
     <div class="toolbar">
       <div class="title-area">
-        <h1>📉 集团信息技术部 · 人员流失诊断 2026</h1>
-        <p>数据截至最新快照 | 口径：正式员工 + 外包A + 外部顾问A | 分析范围：13个二级部门</p>
+        <h1>📉 ${d.name}</h1>
+        <p>口径：正式员工 + 外包A + 外部顾问A | ${d.scope}</p>
       </div>
       <div class="toolbar-btns">
-        <button class="btn-edit" onclick="doAction('edit')">编辑</button>
-        <button class="btn-share" onclick="doAction('share')">
+        <button class="btn-edit" onclick="openEditPanel()">✏️ 编辑</button>
+        <button class="btn-share" onclick="doShare()">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
           分享
         </button>
         <div class="dropdown-wrap">
-          <button class="btn-dots" onclick="toggleDropdown(event)">
-            <span></span><span></span><span></span>
-          </button>
-          <div class="dropdown" id="shareDropdown">
+          <button class="btn-dots" onclick="toggleDropdown(event)"><span></span><span></span><span></span></button>
+          <div class="dropdown" id="moreDropdown">
             <div class="dd-item" onclick="doAction('refresh')"><span class="ico">🔄</span>刷新</div>
-            <div class="dd-item" onclick="doAction('info')"><span class="ico">ℹ️</span>详细信息</div>
-            <div class="dd-item" onclick="doAction('comment')"><span class="ico">💬</span>查看评论</div>
+            <div class="dd-item" onclick="openEditPanel()"><span class="ico">✏️</span>编辑看板</div>
             <div class="dd-item" onclick="doAction('subscribe')"><span class="ico">🔔</span>看板订阅</div>
             <div class="dd-divider"></div>
             <div class="dd-item" onclick="doAction('embed')"><span class="ico">📄</span>嵌入飞书文档</div>
-            <div class="dd-item" onclick="doAction('link')"><span class="ico">🔗</span>生成短链</div>
+            <div class="dd-item" onclick="doShare()"><span class="ico">🔗</span>生成短链</div>
             <div class="dd-divider"></div>
             <div class="dd-item" onclick="doAction('exportImg')"><span class="ico">🖼️</span>导出为图片</div>
-            <div class="dd-item" onclick="doAction('exportBatch')"><span class="ico">📊</span>批量导出图表</div>
-            <div class="dd-divider"></div>
             <div class="dd-item" onclick="doAction('theme')"><span class="ico">🎨</span>切换主题风格</div>
             <div class="dd-item" onclick="doAction('fullscreen')"><span class="ico">⛶</span>全屏显示</div>
           </div>
@@ -164,14 +402,15 @@ body{font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Microsoft YaHei
 
     <!-- KPI -->
     <div class="kpi-g" id="sec-kpi">
-      <div class="kpi c1"><div class="lb">离职率（2026年累计）</div><div class="vl">9.1%</div><div class="sb2">141人离职 / 1,409人在职</div></div>
-      <div class="kpi c2"><div class="lb">被动离职占比</div><div class="vl">64.5%</div><div class="sb2">91人被动 / 50人主动</div></div>
-      <div class="kpi c3"><div class="lb">期末在职人数</div><div class="vl">1,409</div><div class="sb2">13个二级部门</div></div>
-      <div class="kpi c4"><div class="lb">高风险部门</div><div class="vl">3个</div><div class="sb2">离职率 > 12%</div></div>
+      ${d.kpis.map((k, i) => `
+        <div class="kpi ${k.color}" onclick="openEditPanel('kpi',${i})">
+          <div class="lb">${k.label}</div><div class="vl">${k.value}</div><div class="sb2">${k.sub}</div>
+        </div>
+      `).join('')}
     </div>
 
-    <!-- Charts Row 1 -->
-    <div class="cd-g2" id="sec-trend">
+    <!-- Charts -->
+    <div class="cd-g2">
       <div class="cd">
         <h3>📈 月度离职趋势（主动 vs 被动）</h3>
         <div class="ch"><canvas id="cTrend"></canvas></div>
@@ -181,53 +420,26 @@ body{font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Microsoft YaHei
         <div class="ch"><canvas id="cPie"></canvas></div>
       </div>
     </div>
-
-    <!-- Charts Row 2 -->
-    <div class="cd-g2" id="sec-dept">
+    <div class="cd-g2">
       <div class="cd">
         <h3>🏢 二级部门离职率排名</h3>
         <div class="ch"><canvas id="cDept"></canvas></div>
       </div>
-      <div class="cd" id="sec-level">
+      <div class="cd">
         <h3>📊 离职人员职级分布</h3>
         <div class="ch"><canvas id="cLevel"></canvas></div>
       </div>
     </div>
 
-    <!-- Dept Table -->
+    <!-- Conclusion -->
     <div class="cd">
-      <h3>📋 二级部门明细</h3>
-      <table class="tb">
-        <tr><th>部门</th><th>离职人数</th><th>被动离职</th><th>在职人数</th><th>离职率</th><th>风险</th></tr>
-        <tr><td>技术发展与质量管理部</td><td>16</td><td>8</td><td>63</td><td>20.3%</td><td><span class="bg bg-r">高</span></td></tr>
-        <tr><td>战略规划与运营部</td><td>13</td><td>9</td><td>77</td><td>14.4%</td><td><span class="bg bg-r">高</span></td></tr>
-        <tr><td>中国区销服数字化部</td><td>8</td><td>7</td><td>63</td><td>11.3%</td><td><span class="bg bg-y">中</span></td></tr>
-        <tr><td>AI应用中心</td><td>10</td><td>4</td><td>82</td><td>10.9%</td><td><span class="bg bg-y">中</span></td></tr>
-        <tr><td>研产供数字化部</td><td>20</td><td>15</td><td>170</td><td>10.5%</td><td><span class="bg bg-y">中</span></td></tr>
-        <tr><td>国际销服数字化部</td><td>8</td><td>7</td><td>76</td><td>9.5%</td><td><span class="bg bg-y">中</span></td></tr>
-        <tr><td>企业智能协同部</td><td>10</td><td>7</td><td>103</td><td>8.8%</td><td><span class="bg bg-g">低</span></td></tr>
-        <tr><td>财经数字化部</td><td>9</td><td>6</td><td>96</td><td>8.6%</td><td><span class="bg bg-g">低</span></td></tr>
-        <tr><td>零售研发部</td><td>28</td><td>16</td><td>347</td><td>7.5%</td><td><span class="bg bg-g">低</span></td></tr>
-        <tr><td>数据部</td><td>7</td><td>5</td><td>86</td><td>7.5%</td><td><span class="bg bg-g">低</span></td></tr>
-        <tr><td>交付履约部</td><td>5</td><td>2</td><td>66</td><td>7.0%</td><td><span class="bg bg-g">低</span></td></tr>
-        <tr><td>服务研发部</td><td>7</td><td>5</td><td>130</td><td>5.1%</td><td><span class="bg bg-g">低</span></td></tr>
-        <tr><td>汽车销交服数字化部</td><td>0</td><td>0</td><td>49</td><td>0.0%</td><td><span class="bg bg-g">低</span></td></tr>
-      </table>
-    </div>
-
-    <!-- AI Conclusion -->
-    <div class="cd" id="sec-ai">
       <h3>🤖 AI 分析结论</h3>
-      <div class="ai">
-        <div class="av">🤖</div>
-        <div class="msg">基于 2026 年 1-5 月离职数据，以下是集团信息技术部人员流失诊断的 4 个核心发现：</div>
-      </div>
-      <div class="cn">
-        <p><strong>1. 整体离职率偏高，被动离职是主因：</strong>累计离职率 9.1%（141人），被动离职占比高达 64.5%，远超主动离职。3 月是离职高峰（40人，其中32人被动），与 Q1 绩效周期和组织调整节奏强相关。</p>
-        <p><strong>2. 高风险部门集中在中小规模团队：</strong>技术发展与质量管理部（20.3%）和战略规划与运营部（14.4%）离职率最高，两个部门合计在职仅 140 人但离职 29 人，组织稳定性堪忧。被动离职占比均超 50%，指向组织优化力度较大。</p>
-        <p><strong>3. 16-17级以上是离职主力：</strong>17级及以上离职 49 人（被动28人），16级离职 42 人（被动30人），两个层级合计占总离职的 64.5%。这与被动离职为主的特征吻合——中高层级人员在组织调整中受影响更大。</p>
-        <p><strong>4. 零售研发部体量最大但控制较好：</strong>作为最大部门（347人），零售研发部离职率 7.5% 低于整体均值，绝对离职人数 28 人在各部门中最多，但相对风险可控。服务研发部（5.1%）和汽车销交服数字化部（0%）表现最佳。</p>
-      </div>
+      <div class="ai"><div class="av">🤖</div><div class="msg">以下是基于数据的核心发现：</div></div>
+      <div class="cn">${d.conclusion.split('\n').map(line => {
+        const parts = line.split('：');
+        if (parts.length > 1) return `<p><strong>${parts[0]}：</strong>${parts.slice(1).join('：')}</p>`;
+        return `<p>${line}</p>`;
+      }).join('')}</div>
     </div>
 
     <!-- Stats -->
@@ -237,82 +449,167 @@ body{font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Microsoft YaHei
         1. <strong>数据统计时间</strong>：2026年1月1日至最新快照<br>
         2. <strong>员工类型口径</strong>：正式员工(101) + 外包A(115) + 外部顾问A(118)<br>
         3. <strong>离职率公式</strong>：离职人次 / (离职人次 + 期末在职人数)<br>
-        4. <strong>数据来源</strong>：HR数据仓库 ads_ai_qa_trsf_tmn_f、ads_ai_qa_emp_df、ads_ai_qa_dept_df<br>
-        5. <strong>查询引擎</strong>：Hologres · 实时查询
+        4. <strong>数据来源</strong>：HR数据仓库 · Hologres 实时查询
       </p>
     </div>
-  </div>
-</div>
+  `;
 
-<!-- Toast -->
-<div class="toast" id="toast"></div>
-
-<!-- Publish Modal -->
-<div class="mo" id="pubModal">
-  <div class="modal">
-    <h2>📤 发布看板</h2>
-    <div class="fr"><label>看板名称</label><input value="集团信息技术部-人员流失诊断 2026"></div>
-    <div class="fr"><label>可见范围</label><select><option>仅自己可见</option><option selected>指定HRBP可见</option><option>部门负责人可见</option><option>全员可见</option></select></div>
-    <div class="fr"><label>有效期</label><select><option>永久有效</option><option selected>30天</option><option>7天</option></select></div>
-    <div class="bg2"><button class="btn btn-o" onclick="closeModal()">取消</button><button class="btn btn-p" onclick="closeModal();showToast('✅ 看板已发布')">确认发布</button></div>
-  </div>
-</div>
-
-<script>
-const months=['1月','2月','3月','4月','5月'];
-const tmn=[26,19,40,33,23];
-const psv=[17,15,32,12,15];
-const vlt=[9,4,8,21,8];
-
-// Trend
-new Chart(document.getElementById('cTrend'),{
-  type:'bar',
-  data:{labels:months,datasets:[
-    {label:'被动离职',data:psv,backgroundColor:'#ff9800',stack:'a'},
-    {label:'主动离职',data:vlt,backgroundColor:'#3370ff',stack:'a'},
-    {label:'月度离职率(%)',data:[7.8,5.5,11.7,9.7,6.5],type:'line',borderColor:'#f44336',backgroundColor:'transparent',yAxisID:'y1',tension:.3,pointRadius:4}
-  ]},
-  options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom'}},scales:{y:{stacked:true,title:{display:true,text:'人数'}},y1:{position:'right',title:{display:true,text:'离职率 %'},grid:{drawOnChartArea:false}}}}
-});
-
-// Pie
-new Chart(document.getElementById('cPie'),{
-  type:'doughnut',
-  data:{labels:['被动离职 (91人)','主动离职 (50人)'],datasets:[{data:[91,50],backgroundColor:['#ff9800','#3370ff']}]},
-  options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom'}}}
-});
-
-// Dept
-const depts=['技发与质量','战略规划','中国区销服','AI应用中心','研产供数字化','国际销服','企业智能协同','财经数字化','零售研发','数据部','交付履约','服务研发','汽车销交服'];
-const deptRate=[20.3,14.4,11.3,10.9,10.5,9.5,8.8,8.6,7.5,7.5,7.0,5.1,0];
-new Chart(document.getElementById('cDept'),{
-  type:'bar',
-  data:{labels:depts,datasets:[{label:'离职率 %',data:deptRate,backgroundColor:deptRate.map(r=>r>=12?'#f44336':r>=9?'#ff9800':'#34c724')}]},
-  options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{title:{display:true,text:'离职率 %'}}}}
-});
-
-// Level
-new Chart(document.getElementById('cLevel'),{
-  type:'bar',
-  data:{labels:['13级','14级','15级','16级','17级及以上'],datasets:[
-    {label:'被动',data:[17,5,11,30,28],backgroundColor:'#ff9800',stack:'a'},
-    {label:'主动',data:[6,4,7,12,21],backgroundColor:'#3370ff',stack:'a'}
-  ]},
-  options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom'}},scales:{x:{stacked:true},y:{stacked:true,title:{display:true,text:'人数'}}}}
-});
-
-// Utils
-function scrollToEl(id){document.getElementById(id)?.scrollIntoView({behavior:'smooth'})}
-function showToast(m){const e=document.getElementById('toast');e.textContent=m;e.classList.add('show');setTimeout(()=>e.classList.remove('show'),3000)}
-function openModal(){document.getElementById('pubModal').classList.add('show')}
-function closeModal(){document.getElementById('pubModal').classList.remove('show')}
-function toggleDropdown(e){e.stopPropagation();document.getElementById('shareDropdown').classList.toggle('show')}
-document.addEventListener('click',()=>document.getElementById('shareDropdown')?.classList.remove('show'));
-function doAction(a){
-  const m={edit:()=>'✏️ 编辑模式已开启',share:()=>{navigator.clipboard?.writeText(location.href);return '🔗 分享链接已复制'},refresh:()=>{location.reload();return ''},info:()=>'📋 看板信息：集团信息技术部-人员流失诊断 2026',comment:()=>'💬 评论功能开发中',subscribe:()=>'🔔 已订阅看板更新通知',embed:()=>{navigator.clipboard?.writeText('<iframe src="'+location.href+'" width="100%" height="600"></iframe>');return '📄 嵌入代码已复制'},link:()=>{navigator.clipboard?.writeText(location.href);return '🔗 短链已复制'},exportImg:()=>'🖼️ 正在生成截图...',exportBatch:()=>'📊 正在批量导出...',theme:()=>'🎨 主题已切换',fullscreen:()=>{document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen();return ''}};
-  const r=(m[a]||(()=>'功能开发中'))();
-  if(r)showToast(r);
+  // Init charts
+  setTimeout(() => initCharts(c), 50);
 }
+
+// ===================== CHARTS =====================
+let chartInstances = {};
+function initCharts(c) {
+  Object.values(chartInstances).forEach(ch => ch.destroy());
+  chartInstances = {};
+
+  chartInstances.trend = new Chart(document.getElementById('cTrend'), {
+    type: 'bar',
+    data: { labels: c.trend.months, datasets: [
+      { label: '被动离职', data: c.trend.psv, backgroundColor: '#ff9800', stack: 'a' },
+      { label: '主动离职', data: c.trend.vlt, backgroundColor: '#3370ff', stack: 'a' },
+      { label: '离职率(%)', data: c.trend.rate, type: 'line', borderColor: '#f44336', backgroundColor: 'transparent', yAxisID: 'y1', tension: .3, pointRadius: 4 }
+    ]},
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } }, scales: { y: { stacked: true, title: { display: true, text: '人数' } }, y1: { position: 'right', title: { display: true, text: '%' }, grid: { drawOnChartArea: false } } } }
+  });
+
+  chartInstances.pie = new Chart(document.getElementById('cPie'), {
+    type: 'doughnut',
+    data: { labels: [`被动 (${c.pie.psv}人)`, `主动 (${c.pie.vlt}人)`], datasets: [{ data: [c.pie.psv, c.pie.vlt], backgroundColor: ['#ff9800', '#3370ff'] }] },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
+  });
+
+  chartInstances.dept = new Chart(document.getElementById('cDept'), {
+    type: 'bar',
+    data: { labels: c.dept.labels, datasets: [{ label: '离职率 %', data: c.dept.rates, backgroundColor: c.dept.rates.map(r => r >= 12 ? '#f44336' : r >= 9 ? '#ff9800' : '#34c724') }] },
+    options: { responsive: true, maintainAspectRatio: false, indexAxis: 'y', plugins: { legend: { display: false } }, scales: { x: { title: { display: true, text: '离职率 %' } } } }
+  });
+
+  chartInstances.level = new Chart(document.getElementById('cLevel'), {
+    type: 'bar',
+    data: { labels: c.level.labels, datasets: [
+      { label: '被动', data: c.level.psv, backgroundColor: '#ff9800', stack: 'a' },
+      { label: '主动', data: c.level.vlt, backgroundColor: '#3370ff', stack: 'a' }
+    ]},
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } }, scales: { x: { stacked: true }, y: { stacked: true, title: { display: true, text: '人数' } } } }
+  });
+}
+
+// ===================== EDIT PANEL =====================
+function openEditPanel(section, idx) {
+  const db = loadDB();
+  const d = db.dashboards.find(x => x.id === currentDashId);
+  if (!d) return;
+
+  const panel = document.getElementById('editPanel');
+  panel.innerHTML = `
+    <h2>✏️ 编辑看板 <button class="close-btn" onclick="closeEditPanel()">✕</button></h2>
+
+    <div class="form-group">
+      <label>看板名称</label>
+      <input id="ep-name" value="${d.name}">
+    </div>
+
+    <h3 style="margin:20px 0 12px;font-size:15px">📊 KPI 卡片</h3>
+    <div class="kpi-edit-grid">
+      ${d.kpis.map((k, i) => `
+        <div class="kpi-edit">
+          <label>指标 ${i + 1}</label>
+          <input id="ep-kpi-label-${i}" value="${k.label}" placeholder="指标名称" style="margin-bottom:4px">
+          <input id="ep-kpi-value-${i}" value="${k.value}" placeholder="数值" style="margin-bottom:4px">
+          <input id="ep-kpi-sub-${i}" value="${k.sub}" placeholder="说明">
+        </div>
+      `).join('')}
+    </div>
+
+    <h3 style="margin:20px 0 12px;font-size:15px">📝 分析结论</h3>
+    <div class="form-group">
+      <label>每条结论用换行分隔，格式：序号. 标题：内容</label>
+      <textarea id="ep-conclusion" rows="8">${d.conclusion}</textarea>
+    </div>
+
+    <h3 style="margin:20px 0 12px;font-size:15px">🔐 发布设置</h3>
+    <div class="form-group">
+      <label>可见范围</label>
+      <select id="ep-scope">
+        ${['仅自己可见','指定HRBP可见','部门负责人可见','全员可见'].map(s => `<option ${d.scope===s?'selected':''}>${s}</option>`).join('')}
+      </select>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-cancel" onclick="closeEditPanel()">取消</button>
+      <button class="btn btn-save" onclick="saveEditPanel()">💾 保存</button>
+    </div>
+  `;
+  panel.classList.add('open');
+}
+
+function closeEditPanel() {
+  document.getElementById('editPanel').classList.remove('open');
+}
+
+function saveEditPanel() {
+  const db = loadDB();
+  const d = db.dashboards.find(x => x.id === currentDashId);
+  if (!d) return;
+
+  d.name = document.getElementById('ep-name').value;
+  d.scope = document.getElementById('ep-scope').value;
+  d.conclusion = document.getElementById('ep-conclusion').value;
+  d.kpis.forEach((k, i) => {
+    k.label = document.getElementById(`ep-kpi-label-${i}`).value;
+    k.value = document.getElementById(`ep-kpi-value-${i}`).value;
+    k.sub = document.getElementById(`ep-kpi-sub-${i}`).value;
+  });
+
+  saveDB(db);
+  closeEditPanel();
+  renderDashboard();
+  renderSidebar();
+  showToast('✅ 保存成功');
+}
+
+// ===================== ACTIONS =====================
+function doShare() { navigator.clipboard?.writeText(location.href); showToast('🔗 分享链接已复制'); }
+function toggleDropdown(e) { e.stopPropagation(); document.getElementById('moreDropdown')?.classList.toggle('show'); }
+document.addEventListener('click', () => document.getElementById('moreDropdown')?.classList.remove('show'));
+
+function doAction(a) {
+  const m = {
+    refresh: () => { renderDashboard(); return '🔄 已刷新'; },
+    subscribe: () => '🔔 已订阅看板更新通知',
+    embed: () => { navigator.clipboard?.writeText('<iframe src="' + location.href + '" width="100%" height="600"></iframe>'); return '📄 嵌入代码已复制'; },
+    exportImg: () => '🖼️ 正在生成截图...',
+    theme: () => '🎨 主题已切换',
+    fullscreen: () => { document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen(); return ''; }
+  };
+  const r = (m[a] || (() => '功能开发中'))();
+  if (r) showToast(r);
+}
+
+function openModal() { document.getElementById('pubModal').classList.add('show'); document.getElementById('pubName').value = ''; }
+function closeModal() { document.getElementById('pubModal').classList.remove('show'); }
+function doPublish() {
+  const db = loadDB();
+  const d = db.dashboards.find(x => x.id === currentDashId);
+  if (d) {
+    d.status = 'published';
+    d.name = document.getElementById('pubName').value || d.name;
+    d.scope = document.getElementById('pubScope').value;
+    saveDB(db);
+  }
+  closeModal();
+  renderDashboard();
+  renderSidebar();
+  showToast('✅ 看板已发布');
+}
+
+function showToast(m) { const e = document.getElementById('toast'); e.textContent = m; e.classList.add('show'); setTimeout(() => e.classList.remove('show'), 3000); }
+
+// ===================== INIT =====================
+loadDB();
+showPage('home');
 </script>
 </body>
 </html>
