@@ -150,12 +150,17 @@ body{font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Microsoft YaHei
         <h1>📉 集团信息技术部 · 人员流失诊断 2026</h1>
         <p>数据截至最新快照 | 口径：正式员工 + 外包A + 外部顾问A | 分析范围：13个二级部门</p>
       </div>
-      <div class="share-wrap">
-        <button class="share-btn" onclick="toggleDropdown(event)">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+      <div class="toolbar-btns">
+        <button class="btn-edit" onclick="doAction('edit')">编辑</button>
+        <button class="btn-share" onclick="doAction('share')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
           分享
         </button>
-        <div class="dropdown" id="shareDropdown">
+        <div class="share-wrap">
+          <button class="btn-dots" onclick="toggleDropdown(event)">
+            <span></span><span></span><span></span>
+          </button>
+          <div class="dropdown" id="shareDropdown">
           <div class="dd-item" onclick="doAction('refresh')"><span class="ico">🔄</span>刷新</div>
           <div class="dd-item" onclick="doAction('info')"><span class="ico">ℹ️</span>详细信息</div>
           <div class="dd-item" onclick="doAction('comment')"><span class="ico">💬</span>查看评论</div>
