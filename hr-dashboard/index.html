@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HR智能分析平台 Demo</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+:root {
+  --primary: #3370ff;
+  --primary-light: #e8f0fe;
+  --success: #34c724;
+  --warning: #ff9800;
+  --danger: #f44336;
+  --bg: #f5f6f8;
+  --card: #ffffff;
+  --border: #e4e6eb;
+  --text: #1f2329;
+  --text-sec: #646a73;
+  --shadow: 0 2px 8px rgba(0,0,0,0.06);
+  --radius: 12px;
+}
+body { font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif; background: var(--bg); color: var(--text); }
+
+/* === Layout === */
+.app { display: flex; height: 100vh; }
+.sidebar { width: 240px; background: var(--card); border-right: 1px solid var(--border); display: flex; flex-direction: column; flex-shrink: 0; }
+.sidebar-header { padding: 20px; border-bottom: 1px solid var(--border); }
+.sidebar-header h2 { font-size: 16px; color: var(--primary); display: flex; align-items: center; gap: 8px; }
+.sidebar-header h2::before { content: '🧠'; }
+.sidebar-nav { flex: 1; padding: 12px; overflow-y: auto; }
+.nav-group-title { font-size: 12px; color: var(--text-sec); padding: 8px 12px 4px; font-weight: 600; }
+.nav-item { padding: 10px 12px; border-radius: 8px; cursor: pointer; font-size: 14px; display: flex; align-items: center; gap: 8px; transition: all .15s; }
+.nav-item:hover { background: var(--primary-light); }
+.nav-item.active { background: var(--primary-light); color: var(--primary); font-weight: 600; }
+.main { flex: 1; overflow-y: auto; padding: 24px 32px; }
+
+/* === Header === */
+.page-header { margin-bottom: 24px; }
+.page-header h1 { font-size: 22px; margin-bottom: 4px; }
+.page-header p { color: var(--text-sec); font-size: 14px; }
+
+/* === Template Cards === */
+.template-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; margin-top: 16px; }
+.template-card { background: var(--card); border-radius: var(--radius); padding: 20px; cursor: pointer; border: 2px solid transparent; transition: all .2s; box-shadow: var(--shadow); }
+.template-card:hover { border-color: var(--primary); transform: translateY(-2px); }
+.template-card .icon { font-size: 32px; margin-bottom: 12px; }
+.template-card h3 { font-size: 15px; margin-bottom: 6px; }
+.template-card p { font-size: 13px; color: var(--text-sec); line-height: 1.5; }
+.template-card .tags { margin-top: 10px; display: flex; gap: 6px; flex-wrap: wrap; }
+.tag { font-size: 11px; padding: 2px 8px; border-radius: 4px; background: var(--primary-light); color: var(--primary); }
+
+/* === Stepper === */
+.stepper { display: flex; align-items: center; margin-bottom: 28px; background: var(--card); padding: 16px 24px; border-radius: var(--radius); box-shadow: var(--shadow); }
+.step { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text-sec); }
+.step .num { width: 28px; height: 28px; border-radius: 50%; background: var(--border); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; }
+.step.active .num { background: var(--primary); color: #fff; }
+.step.done .num { background: var(--success); color: #fff; }
+.step.done { color: var(--success); }
+.step-divider { flex: 1; height: 1px; background: var(--border); margin: 0 12px; min-width: 20px; }
+
+/* === Cards & Panels === */
+.card { background: var(--card); border-radius: var(--radius); padding: 20px; margin-bottom: 16px; box-shadow: var(--shadow); }
+.card h3 { font-size: 15px; margin-bottom: 12px; display: flex; align-items: center; gap: 6px; }
+.card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
+.kpi-card { background: linear-gradient(135deg, var(--primary), #5b8def); color: #fff; padding: 16px; border-radius: 10px; }
+.kpi-card.warn { background: linear-gradient(135deg, var(--warning), #ffb74d); }
+.kpi-card.danger { background: linear-gradient(135deg, var(--danger), #e57373); }
+.kpi-card.success { background: linear-gradient(135deg, var(--success), #66bb6a); }
+.kpi-card .label { font-size: 12px; opacity: .85; }
+.kpi-card .value { font-size: 28px; font-weight: 700; margin: 4px 0; }
+.kpi-card .sub { font-size: 11px; opacity: .7; }
+
+/* === Data Table === */
+.data-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.data-table th { background: #f8f9fa; padding: 10px 12px; text-align: left; font-weight: 600; border-bottom: 2px solid var(--border); }
+.data-table td { padding: 10px 12px; border-bottom: 1px solid var(--border); }
+.data-table tr:hover { background: #f8f9fa; }
+.badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+.badge-red { background: #fde8e8; color: var(--danger); }
+.badge-yellow { background: #fff3e0; color: var(--warning); }
+.badge-green { background: #e8f5e9; color: var(--success); }
+
+/* === Buttons === */
+.btn { padding: 8px 20px; border-radius: 8px; border: none; cursor: pointer; font-size: 14px; font-weight: 500; transition: all .15s; display: inline-flex; align-items: center; gap: 6px; }
+.btn-primary { background: var(--primary); color: #fff; }
+.btn-primary:hover { background: #2860e1; }
+.btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text); }
+.btn-outline:hover { border-color: var(--primary); color: var(--primary); }
+.btn-success { background: var(--success); color: #fff; }
+.btn-group { display: flex; gap: 8px; margin-top: 16px; }
+.btn-sm { padding: 5px 12px; font-size: 12px; }
+
+/* === Confirm Panel === */
+.confirm-item { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border: 1px solid var(--border); border-radius: 8px; margin-bottom: 8px; }
+.confirm-item .label { font-size: 14px; }
+.confirm-item .status { font-size: 12px; color: var(--text-sec); }
+.confirmed .status { color: var(--success); }
+
+/* === Chat / AI Panel === */
+.ai-panel { background: #f0f4ff; border-radius: var(--radius); padding: 16px; margin-bottom: 16px; }
+.ai-panel .avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--primary); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 14px; margin-bottom: 8px; }
+.ai-panel .msg { font-size: 14px; line-height: 1.6; }
+.typing { display: inline-block; }
+.typing span { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--primary); margin: 0 2px; animation: bounce .6s infinite alternate; }
+.typing span:nth-child(2) { animation-delay: .2s; }
+.typing span:nth-child(3) { animation-delay: .4s; }
+@keyframes bounce { to { transform: translateY(-6px); opacity: .3; } }
+
+/* === Publish Modal === */
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.4); display: flex; align-items: center; justify-content: center; z-index: 100; opacity: 0; pointer-events: none; transition: opacity .25s; }
+.modal-overlay.show { opacity: 1; pointer-events: all; }
+.modal { background: var(--card); border-radius: 16px; padding: 32px; width: 480px; max-width: 90vw; box-shadow: 0 20px 60px rgba(0,0,0,.2); }
+.modal h2 { font-size: 18px; margin-bottom: 16px; }
+.modal .form-row { margin-bottom: 14px; }
+.modal label { font-size: 13px; color: var(--text-sec); display: block; margin-bottom: 4px; }
+.modal input, .modal select { width: 100%; padding: 8px 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; }
+.modal .btn-group { justify-content: flex-end; }
+
+/* === Toast === */
+.toast { position: fixed; top: 24px; right: 24px; background: var(--success); color: #fff; padding: 12px 24px; border-radius: 10px; font-size: 14px; box-shadow: 0 4px 20px rgba(0,0,0,.15); z-index: 200; transform: translateX(120%); transition: transform .3s; }
+.toast.show { transform: translateX(0); }
+
+/* === Chart container === */
+.chart-wrap { position: relative; height: 260px; margin-top: 12px; }
+
+/* === Tabs === */
+.tabs { display: flex; gap: 0; margin-bottom: 16px; border-bottom: 2px solid var(--border); }
+.tab { padding: 8px 16px; font-size: 14px; cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -2px; color: var(--text-sec); transition: all .15s; }
+.tab.active { color: var(--primary); border-bottom-color: var(--primary); font-weight: 600; }
+
+/* === Responsive === */
+@media (max-width: 768px) {
+  .sidebar { display: none; }
+  .main { padding: 16px; }
+  .card-grid { grid-template-columns: 1fr 1fr; }
+  .template-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<div class="app">
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="sidebar-header">
+      <h2>HR智能分析平台</h2>
+    </div>
+    <div class="sidebar-nav">
+      <div class="nav-group-title">工作台</div>
+      <div class="nav-item active" onclick="showPage('home')">🏠 模板中心</div>
+      <div class="nav-item" onclick="showPage('workspace')">📂 我的工作台</div>
+
+      <div class="nav-group-title" style="margin-top:16px">分析模板</div>
+      <div class="nav-item" onclick="selectTemplate(0)">📉 人员流失诊断</div>
+      <div class="nav-item" onclick="selectTemplate(1)">👥 人员结构盘点</div>
+      <div class="nav-item" onclick="selectTemplate(2)">📊 绩效分布分析</div>
+      <div class="nav-item" onclick="selectTemplate(3)">💰 人力成本分析</div>
+      <div class="nav-item" onclick="selectTemplate(4)">🎯 招聘效能分析</div>
+      <div class="nav-item" onclick="selectTemplate(5)">📈 人才梯队健康度</div>
+
+      <div class="nav-group-title" style="margin-top:16px">已发布看板</div>
+      <div class="nav-item" onclick="showPage('published')">📋 集团信息部-流失诊断Q1</div>
+      <div class="nav-item" onclick="showPage('published')">📋 中国区-人员结构盘点</div>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="main" id="mainContent"></div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<!-- Publish Modal -->
+<div class="modal-overlay" id="publishModal">
+  <div class="modal">
+    <h2>📤 发布看板</h2>
+    <div class="form-row">
+      <label>看板名称</label>
+      <input type="text" id="pubName" value="集团信息技术部-人员流失诊断 2026Q2">
+    </div>
+    <div class="form-row">
+      <label>可见范围</label>
+      <select id="pubScope">
+        <option>仅自己可见</option>
+        <option selected>指定HRBP可见</option>
+        <option>部门负责人可见</option>
+        <option>全员可见</option>
+      </select>
+    </div>
+    <div class="form-row">
+      <label>有效期</label>
+      <select>
+        <option>永久有效</option>
+        <option selected>30天</option>
+        <option>7天</option>
+      </select>
+    </div>
+    <div class="btn-group">
+      <button class="btn btn-outline" onclick="closeModal()">取消</button>
+      <button class="btn btn-primary" onclick="doPublish()">确认发布</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ===================== DATA =====================
+const templates = [
+  { icon: '📉', name: '人员流失诊断', desc: '分析离职率、主动/被动离职、流失画像，定位高风险部门和人群', tags: ['离职率', '流失画像', '风险预警'] },
+  { icon: '👥', name: '人员结构盘点', desc: '分析年龄、司龄、职级、学历分布，评估组织健康度', tags: ['结构分布', '组织健康', '人才密度'] },
+  { icon: '📊', name: '绩效分布分析', desc: '分析各等级绩效分布、高绩效留存、绩优流失率', tags: ['绩效等级', '高绩效流失', '分布趋势'] },
+  { icon: '💰', name: '人力成本分析', desc: '分析人力成本结构、人均成本、预算使用率', tags: ['成本结构', '人均成本', '预算'] },
+  { icon: '🎯', name: '招聘效能分析', desc: '分析招聘漏斗、Offer接受率、到岗周期', tags: ['招聘漏斗', 'Offer率', '到岗周期'] },
+  { icon: '📈', name: '人才梯队健康度', desc: '分析关键岗位继任覆盖率、高潜流失风险', tags: ['继任覆盖', '高潜', '梯队'] },
+];
+
+const workflowSteps = ['选择模板', '确认主题', '确认问题', '确认口径', 'AI生成初稿', 'HRBP微调', '发布看板'];
+
+// ===================== STATE =====================
+let currentPage = 'home';
+let currentStep = -1;
+let selectedTemplate = -1;
+let confirmedItems = { theme: false, questions: false, data: false };
+
+// ===================== RENDER =====================
+function showPage(page) {
+  currentPage = page;
+  updateNav();
+  if (page === 'home') renderHome();
+  else if (page === 'workspace') renderWorkspace();
+  else if (page === 'published') renderPublished();
+}
+
+function updateNav() {
+  document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+}
+
+function selectTemplate(idx) {
+  selectedTemplate = idx;
+  currentStep = 0;
+  confirmedItems = { theme: false, questions: false, data: false };
+  renderWorkflow();
+}
+
+// ---- Home Page ----
+function renderHome() {
+  const el = document.getElementById('mainContent');
+  el.innerHTML = `
+    <div class="page-header">
+      <h1>🏠 模板中心</h1>
+      <p>选择分析模板，AI 协助你快速生成交互式 HR 看板</p>
+    </div>
+    <div class="template-grid">
+      ${templates.map((t, i) => `
+        <div class="template-card" onclick="selectTemplate(${i})">
+          <div class="icon">${t.icon}</div>
+          <h3>${t.name}</h3>
+          <p>${t.desc}</p>
+          <div class="tags">${t.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}</div>
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+
+// ---- Workspace ----
+function renderWorkspace() {
+  const el = document.getElementById('mainContent');
+  el.innerHTML = `
+    <div class="page-header">
+      <h1>📂 我的工作台</h1>
+      <p>管理你的分析项目和草稿</p>
+    </div>
+    <div class="card">
+      <h3>📝 进行中</h3>
+      <table class="data-table">
+        <tr><th>项目名称</th><th>模板</th><th>状态</th><th>更新时间</th><th>操作</th></tr>
+        <tr>
+          <td>集团信息部-流失诊断</td><td>人员流失诊断</td>
+          <td><span class="badge badge-yellow">AI生成中</span></td>
+          <td>2026-06-03 14:30</td>
+          <td><button class="btn btn-outline btn-sm" onclick="selectTemplate(0)">继续编辑</button></td>
+        </tr>
+      </table>
+    </div>
+    <div class="card">
+      <h3>✅ 已发布</h3>
+      <table class="data-table">
+        <tr><th>项目名称</th><th>模板</th><th>可见范围</th><th>发布日期</th><th>操作</th></tr>
+        <tr>
+          <td>中国区-人员结构盘点</td><td>人员结构盘点</td>
+          <td>部门负责人</td><td>2026-05-28</td>
+          <td><button class="btn btn-outline btn-sm" onclick="showPage('published')">查看</button></td>
+        </tr>
+      </table>
+    </div>
+  `;
+}
+
+// ---- Workflow (core) ----
+function renderWorkflow() {
+  const t = templates[selectedTemplate];
+  const el = document.getElementById('mainContent');
+
+  el.innerHTML = `
+    <div class="page-header">
+      <h1>${t.icon} ${t.name}</h1>
+      <p>${t.desc}</p>
+    </div>
+    ${renderStepper()}
+    ${renderStepContent()}
+  `;
+
+  // init charts if on step 4+
+  if (currentStep >= 4) setTimeout(initCharts, 100);
+}
+
+function renderStepper() {
+  return `<div class="stepper">${workflowSteps.map((s, i) => {
+    let cls = i < currentStep ? 'done' : i === currentStep ? 'active' : '';
+    let icon = i < currentStep ? '✓' : i + 1;
+    let divider = i < workflowSteps.length - 1 ? '<div class="step-divider"></div>' : '';
+    return `<div class="step ${cls}"><div class="num">${icon}</div><span>${s}</span></div>${divider}`;
+  }).join('')}</div>`;
+}
+
+function renderStepContent() {
+  switch (currentStep) {
+    case 0: return step0_theme();
+    case 1: return step1_questions();
+    case 2: return step2_data();
+    case 3: return step3_aiDraft();
+    case 4: return step4_edit();
+    case 5: return step5_review();
+    case 6: return step6_done();
+    default: return '';
+  }
+}
+
+// ---- Step 0: 确认主题 ----
+function step0_theme() {
+  const t = templates[selectedTemplate];
+  return `
+    <div class="ai-panel">
+      <div class="avatar">🤖</div>
+      <div class="msg">我为你准备了「${t.name}」分析模板。请确认以下分析主题是否符合你的需求：</div>
+    </div>
+    <div class="card">
+      <h3>📌 分析主题</h3>
+      <div class="confirm-item ${confirmedItems.theme ? 'confirmed' : ''}">
+        <div>
+          <div class="label"><strong>集团信息技术部 - ${t.name} 2026Q2</strong></div>
+          <div class="status">分析范围：集团信息技术部（含6个二级部门）| 时间范围：2026年1-5月</div>
+        </div>
+        ${confirmedItems.theme
+          ? '<span class="badge badge-green">✓ 已确认</span>'
+          : `<button class="btn btn-primary btn-sm" onclick="confirmItem('theme')">确认</button>`}
+      </div>
+    </div>
+    ${confirmedItems.theme ? `<div class="btn-group"><button class="btn btn-primary" onclick="nextStep()">下一步 →</button></div>` : ''}
+  `;
+}
+
+// ---- Step 1: 确认问题 ----
+function step1_questions() {
+  const questions = [
+    '集团信息技术部2026年整体离职率是多少？同比变化如何？',
+    '哪些二级部门离职率最高？主动/被动离职占比？',
+    '离职员工的职级分布和司龄分布有什么特征？',
+    '高绩效员工的流失率如何？与集团对比怎样？',
+  ];
+  return `
+    <div class="ai-panel">
+      <div class="avatar">🤖</div>
+      <div class="msg">基于模板，我建议从以下 4 个核心问题展开分析。你可以调整或补充：</div>
+    </div>
+    <div class="card">
+      <h3>❓ 分析问题清单</h3>
+      ${questions.map((q, i) => `
+        <div class="confirm-item">
+          <div class="label"><strong>Q${i+1}.</strong> ${q}</div>
+          <button class="btn btn-outline btn-sm">✏️ 编辑</button>
+        </div>
+      `).join('')}
+      <div style="margin-top:12px">
+        <button class="btn btn-outline btn-sm" onclick="showToast('已添加新问题')">＋ 添加问题</button>
+      </div>
+    </div>
+    <div class="btn-group">
+      <button class="btn btn-outline" onclick="prevStep()">← 上一步</button>
+      <button class="btn btn-primary" onclick="confirmItem('questions'); nextStep()">确认问题，下一步 →</button>
+    </div>
+  `;
+}
+
+// ---- Step 2: 确认数据口径 ----
+function step2_data() {
+  return `
+    <div class="ai-panel">
+      <div class="avatar">🤖</div>
+      <div class="msg">我已根据分析问题自动匹配数据口径，请确认以下数据表和字段是否准确：</div>
+    </div>
+    <div class="card">
+      <h3>🗃️ 数据口径确认</h3>
+      <table class="data-table">
+        <tr><th>数据表</th><th>字段</th><th>口径说明</th><th>状态</th></tr>
+        <tr>
+          <td>员工主表</td><td>real_emp_cls_cd</td>
+          <td>员工类型：正式(101) + 外包A(115) + 外部顾问A(118)</td>
+          <td><span class="badge badge-green">✓</span></td>
+        </tr>
+        <tr>
+          <td>离职事实表</td><td>tmn_eft_dt, psv_tmn_flg</td>
+          <td>离职日期 + 被动离职标识</td>
+          <td><span class="badge badge-green">✓</span></td>
+        </tr>
+        <tr>
+          <td>部门维表</td><td>dept_nm_lvl1</td>
+          <td>一级部门 = "集团信息技术部"</td>
+          <td><span class="badge badge-green">✓</span></td>
+        </tr>
+        <tr>
+          <td>绩效表</td><td>pfm, hi_pfm_flg</td>
+          <td>最近一次绩效等级 / 高绩效标识</td>
+          <td><span class="badge badge-yellow">需确认</span></td>
+        </tr>
+      </table>
+    </div>
+    <div class="ai-panel">
+      <div class="avatar">📊</div>
+      <div class="msg">AI 已预览数据样本（最近5条），数据已就绪。</div>
+    </div>
+    <div class="btn-group">
+      <button class="btn btn-outline" onclick="prevStep()">← 上一步</button>
+      <button class="btn btn-primary" onclick="confirmItem('data'); nextStep()">口径确认，生成初稿 →</button>
+    </div>
+  `;
+}
+
+// ---- Step 3: AI 生成初稿（动画） ----
+function step3_aiDraft() {
+  setTimeout(() => nextStep(), 2800);
+  return `
+    <div class="ai-panel">
+      <div class="avatar">🤖</div>
+      <div class="msg">
+        正在为你生成看板初稿...<br><br>
+        <div class="typing"><span></span><span></span><span></span></div>
+        <br>
+        <small style="color:var(--text-sec)">已完成：KPI卡片 ✓ | 趋势图表 ✓ | 分析结论 ✓ | 明细表格 ✓</small>
+      </div>
+    </div>
+    <div class="card" style="text-align:center;padding:48px">
+      <div style="font-size:48px;margin-bottom:16px">🎨</div>
+      <p style="color:var(--text-sec)">AI 正在组装交互式 HTML 看板，预计需要几秒钟...</p>
+    </div>
+  `;
+}
+
+// ---- Step 4: HRBP 微调（看板预览） ----
+function step4_edit() {
+  return `
+    <div class="ai-panel">
+      <div class="avatar">✅</div>
+      <div class="msg">看板初稿已生成！你可以在下方直接微调：拖拽卡片位置、修改标题、调整图表样式。满意后点击「下一步」。</div>
+    </div>
+
+    <!-- KPI Cards -->
+    <div class="card-grid" style="margin-bottom:16px">
+      <div class="kpi-card danger">
+        <div class="label">离职率（2026）</div>
+        <div class="value">9.1%</div>
+        <div class="sub">同比 +4.1pp ↑</div>
+      </div>
+      <div class="kpi-card warn">
+        <div class="label">被动离职占比</div>
+        <div class="value">46.9%</div>
+        <div class="sub">同比 +12.3pp</div>
+      </div>
+      <div class="kpi-card">
+        <div class="label">期末在职人数</div>
+        <div class="value">1,409</div>
+        <div class="sub">较年初 -87人</div>
+      </div>
+      <div class="kpi-card success">
+        <div class="label">高绩效流失率</div>
+        <div class="value">2.8%</div>
+        <div class="sub">低于集团均值 3.5%</div>
+      </div>
+    </div>
+
+    <!-- Charts -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+      <div class="card">
+        <h3>📈 月度离职趋势</h3>
+        <div class="chart-wrap"><canvas id="chartTrend"></canvas></div>
+      </div>
+      <div class="card">
+        <h3>🏷️ 离职类型分布</h3>
+        <div class="chart-wrap"><canvas id="chartType"></canvas></div>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+      <div class="card">
+        <h3>🏢 二级部门离职率</h3>
+        <div class="chart-wrap"><canvas id="chartDept"></canvas></div>
+      </div>
+      <div class="card">
+        <h3>📊 职级分布</h3>
+        <div class="chart-wrap"><canvas id="chartLevel"></canvas></div>
+      </div>
+    </div>
+
+    <!-- Analysis conclusions -->
+    <div class="card">
+      <h3>📝 AI 分析结论</h3>
+      <div style="font-size:14px;line-height:1.8">
+        <p><strong>1. 整体离职率偏高：</strong>集团信息技术部2026年1-5月离职率9.1%，同比上升4.1pp，高于集团均值（7.2%）。被动离职占比46.9%，表明组织优化力度加大。</p>
+        <p><strong>2. 高风险部门：</strong>终端研发部离职率最高（12.3%），主要为被动离职（占比62%）；云平台部主动离职率偏高（8.1%），需关注人才保留。</p>
+        <p><strong>3. 人群特征：</strong>离职员工以13-15级（专员/高级专员）为主，占比58%；司龄1-2年的员工流失最多，试用期通过后的"一年之痒"是关键节点。</p>
+        <p><strong>4. 高绩效保留良好：</strong>高绩效员工流失率2.8%，低于集团均值3.5%，说明核心技术人才保留策略有效。</p>
+      </div>
+    </div>
+
+    <!-- Edit toolbar -->
+    <div class="card" style="background:#f8f9fa;border:2px dashed var(--border)">
+      <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+        <span style="font-weight:600">🛠️ 微调工具栏</span>
+        <button class="btn btn-outline btn-sm">✏️ 编辑标题</button>
+        <button class="btn btn-outline btn-sm">📊 切换图表类型</button>
+        <button class="btn btn-outline btn-sm">🎨 调整配色</button>
+        <button class="btn btn-outline btn-sm">＋ 添加卡片</button>
+        <button class="btn btn-outline btn-sm">🔄 拖拽排序</button>
+      </div>
+    </div>
+
+    <div class="btn-group">
+      <button class="btn btn-outline" onclick="prevStep()">← 上一步</button>
+      <button class="btn btn-primary" onclick="nextStep()">微调完成，准备发布 →</button>
+    </div>
+  `;
+}
+
+// ---- Step 5: 审批发布 ----
+function step5_review() {
+  return `
+    <div class="ai-panel">
+      <div class="avatar">📋</div>
+      <div class="msg">看板已微调完成，请进行最终确认和发布设置。</div>
+    </div>
+
+    <div class="card">
+      <h3>📋 看板预览摘要</h3>
+      <table class="data-table">
+        <tr><td>看板名称</td><td><strong>集团信息技术部 - 人员流失诊断 2026Q2</strong></td></tr>
+        <tr><td>分析范围</td><td>集团信息技术部（6个二级部门）</td></tr>
+        <tr><td>时间范围</td><td>2026年1月 - 5月</td></tr>
+        <tr><td>包含模块</td><td>KPI卡片(4) / 趋势图(2) / 分布图(2) / 结论(4条)</td></tr>
+        <tr><td>数据口径</td><td>正式员工 + 外包A + 外部顾问A</td></tr>
+      </table>
+    </div>
+
+    <div class="card">
+      <h3>🔐 权限设置</h3>
+      <div class="confirm-item">
+        <div><div class="label">可见范围</div><div class="status">指定HRBP可见（3人）</div></div>
+        <button class="btn btn-outline btn-sm">修改</button>
+      </div>
+      <div class="confirm-item">
+        <div><div class="label">有效期</div><div class="status">30天（至 2026-07-03）</div></div>
+        <button class="btn btn-outline btn-sm">修改</button>
+      </div>
+    </div>
+
+    <div class="btn-group">
+      <button class="btn btn-outline" onclick="prevStep()">← 返回微调</button>
+      <button class="btn btn-outline" onclick="openModal()">📤 高级发布设置</button>
+      <button class="btn btn-success" onclick="doPublish()">✅ 一键发布</button>
+    </div>
+  `;
+}
+
+// ---- Step 6: Done ----
+function step6_done() {
+  return `
+    <div style="text-align:center;padding:60px 0">
+      <div style="font-size:72px;margin-bottom:16px">🎉</div>
+      <h1 style="font-size:24px;margin-bottom:8px">看板发布成功！</h1>
+      <p style="color:var(--text-sec);font-size:16px;margin-bottom:32px">「集团信息技术部 - 人员流失诊断 2026Q2」已发布</p>
+      <div class="btn-group" style="justify-content:center">
+        <button class="btn btn-primary" onclick="showPage('published')">📊 查看看板</button>
+        <button class="btn btn-outline" onclick="showToast('链接已复制')">🔗 复制分享链接</button>
+        <button class="btn btn-outline" onclick="showPage('home')">🏠 返回模板中心</button>
+      </div>
+    </div>
+  `;
+}
+
+// ---- Published Dashboard ----
+function renderPublished() {
+  currentStep = 4;
+  renderWorkflow();
+}
+
+// ===================== CHARTS =====================
+function initCharts() {
+  // Trend
+  const ctxTrend = document.getElementById('chartTrend');
+  if (ctxTrend) {
+    new Chart(ctxTrend, {
+      type: 'line',
+      data: {
+        labels: ['1月', '2月', '3月', '4月', '5月'],
+        datasets: [
+          { label: '离职率', data: [7.8, 8.2, 9.5, 10.1, 9.1], borderColor: '#f44336', backgroundColor: 'rgba(244,67,54,0.1)', fill: true, tension: 0.3 },
+          { label: '集团均值', data: [6.5, 6.8, 7.0, 7.5, 7.2], borderColor: '#9e9e9e', borderDash: [5,5], fill: false, tension: 0.3 },
+        ]
+      },
+      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
+    });
+  }
+
+  // Type pie
+  const ctxType = document.getElementById('chartType');
+  if (ctxType) {
+    new Chart(ctxType, {
+      type: 'doughnut',
+      data: {
+        labels: ['主动离职', '被动离职'],
+        datasets: [{ data: [75, 66], backgroundColor: ['#3370ff', '#ff9800'] }]
+      },
+      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
+    });
+  }
+
+  // Dept bar
+  const ctxDept = document.getElementById('chartDept');
+  if (ctxDept) {
+    new Chart(ctxDept, {
+      type: 'bar',
+      data: {
+        labels: ['终端研发', '云平台', '基础架构', '数据平台', '质量工程', '安全合规'],
+        datasets: [{
+          label: '离职率 %',
+          data: [12.3, 8.1, 7.5, 9.8, 6.2, 5.4],
+          backgroundColor: ['#f44336', '#ff9800', '#ffc107', '#ff5722', '#4caf50', '#2196f3']
+        }]
+      },
+      options: { responsive: true, maintainAspectRatio: false, indexAxis: 'y', plugins: { legend: { display: false } } }
+    });
+  }
+
+  // Level bar
+  const ctxLevel = document.getElementById('chartLevel');
+  if (ctxLevel) {
+    new Chart(ctxLevel, {
+      type: 'bar',
+      data: {
+        labels: ['12级及以下', '13级', '14级', '15级', '16级', '17级及以上'],
+        datasets: [{
+          label: '离职人数',
+          data: [18, 32, 38, 28, 15, 10],
+          backgroundColor: '#3370ff'
+        }]
+      },
+      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+    });
+  }
+}
+
+// ===================== NAV =====================
+function nextStep() { currentStep++; renderWorkflow(); window.scrollTo(0,0); }
+function prevStep() { currentStep--; renderWorkflow(); window.scrollTo(0,0); }
+function confirmItem(key) { confirmedItems[key] = true; renderWorkflow(); }
+
+function openModal() { document.getElementById('publishModal').classList.add('show'); }
+function closeModal() { document.getElementById('publishModal').classList.remove('show'); }
+function doPublish() {
+  closeModal();
+  currentStep = 6;
+  renderWorkflow();
+  showToast('✅ 看板发布成功！');
+}
+
+function showToast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 3000);
+}
+
+// ===================== INIT =====================
+showPage('home');
+</script>
+</body>
+</html>
